@@ -211,6 +211,9 @@ prometheus:
       - name: 'alertmananger-bot'
         webhook_configs:
           - url: 'http://127.0.0.1:8085/webhooks/telegram/-030342343'
+  amtool_settings:
+    alertmanager.url: 'htts://alermanager.example.com'
+    tls.insecure.skip.verify: 'true'
   prometheus_settings:
     global:
       scrape_interval: 15s

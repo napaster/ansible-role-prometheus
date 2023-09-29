@@ -33,6 +33,9 @@
     alertmanager_instance_settings: "{{
       hostvars[inventory_hostname]['prometheus'] |
       community.general.json_query('[].alertmanager_settings[] | [0]') }}"
+    amtool_instance_settings: "{{
+      hostvars[inventory_hostname]['prometheus'] |
+      community.general.json_query('[].amtool_settings[] | [0]') }}"
 - name: "prometheus | Assert that package state in valid value"
   ansible.builtin.assert:
     that:
@@ -61,3 +64,33 @@
   when:
     - "vars['alertmanager_service_settings'] is defined"
     - "vars['alertmanager_service_settings'] != []"
+- name: "prometheus | Create Prometheus directory"
+  ansible.builtin.file:
+    path: "{{ hostvars[inventory_hostname]['prometheus_conf_dest'] }}"
+    state: "directory"
+    owner: "root"
+    group: "root"
+    mode: "0755"
+  when:
+    - "vars['prometheus_instance_settings'] is defined"
+    - "vars['prometheus_instance_settings'] != ''"
+- name: "prometheus | Create Alertmanager directory"
+  ansible.builtin.file:
+    path: "{{ hostvars[inventory_hostname]['alertmanager_conf_dest'] }}"
+    state: "directory"
+    owner: "root"
+    group: "root"
+    mode: "0755"
+  when:
+    - "vars['alertmanager_instance_settings'] is defined"
+    - "vars['alertmanager_instance_settings'] != ''"
+- name: "prometheus | Create amtool directory"
+  ansible.builtin.file:
+    path: "{{ hostvars[inventory_hostname]['amtool_conf_dest'] }}"
+    state: "directory"
+    owner: "root"
+    group: "root"
+    mode: "0755"
+  when:
+    - "vars['amtool_instance_settings'] is defined"
+    - "vars['amtool_instance_settings'] != ''"

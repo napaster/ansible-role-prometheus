@@ -52,3 +52,6 @@
 - name: "prometheus | Include Alertmanager deployment tasks"
   ansible.builtin.import_tasks:
     file: "deploy_alertmanager.yml"
+- name: "prometheus | Include amtool deployment tasks"
+  ansible.builtin.import_tasks:
+    file: "deploy_amtool.yml"
