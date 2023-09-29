@@ -1,12 +1,16 @@
 ---
-- ansible.builtin.import_tasks:
+- name: "prometheus | Include pre requisite tasks"
+  ansible.builtin.import_tasks:
     file: "pre_requisite.yml"
 - name: "prometheus | Install Prometheus package"
   block:
-    - ansible.builtin.set_fact:
+    - name: "prometheus | Set fact for packages task [Prometheus package]"
+      ansible.builtin.set_fact:
         prometheus_package_name:
           "{{ hostvars[inventory_hostname]['prometheus_package'] }}"
-    - include_tasks: "packages.yml"
+    - name: "prometheus | Include packages tasks [Prometheus package]"
+      ansible.builtin.include_tasks:
+        file: "packages.yml"
       when:
         - "hostvars[inventory_hostname]['prometheus'] is defined"
         - "hostvars[inventory_hostname]['prometheus'] != ''"
@@ -21,10 +25,13 @@
           "[].install_package[] | map(&prometheus || 'false', @) | [0]"
 - name: "prometheus | Install Alertmanager package"
   block:
-    - ansible.builtin.set_fact:
+    - name: "prometheus | Set fact for packages task [Alertmanager package]"
+      ansible.builtin.set_fact:
         prometheus_package_name:
           "{{ hostvars[inventory_hostname]['alertmanager_package'] }}"
-    - include_tasks: "packages.yml"
+    - name: "prometheus | Include packages tasks [Alertmanager package]"
+      ansible.builtin.include_tasks:
+        file: "packages.yml"
       when:
         - "hostvars[inventory_hostname]['prometheus'] is defined"
         - "hostvars[inventory_hostname]['prometheus'] != ''"
@@ -37,8 +44,11 @@
       vars:
         alertmanager_install_package:
           "[].install_package[] | map(&alertmanager || 'false', @) | [0]"
-- ansible.builtin.import_tasks:
+- name: "prometheus | Include Prometheus deployment tasks"
+  ansible.builtin.import_tasks:
     file: "deploy_prometheus.yml"
-- meta: "flush_handlers"
-- ansible.builtin.import_tasks:
+- name: "systemd_helper | Flush handlers"
+  ansible.builtin.meta: "flush_handlers"
+- name: "prometheus | Include Alertmanager deployment tasks"
+  ansible.builtin.import_tasks:
     file: "deploy_alertmanager.yml"

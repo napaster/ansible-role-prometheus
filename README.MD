@@ -10,7 +10,7 @@ database and Alertmanager
 ## Extra
 
 Configuration pass as-is from yaml to pretty yaml with validation via
-`promtool` for Prometheus and `amtool` for Alertmanager.
+`promtool` for Prometheus and `amtool` for Alertmanager
 
 
 ## Example configuration
@@ -105,14 +105,14 @@ prometheus:
 # Maximum number of bytes in a single frame for streaming remote read response
 # types before marshalling. Note that client might have limit on frame size as
 # well. 1MB as recommended by protobuf by default
-    storage_remote_read_max_bytes_in_frame: '1048576'  
+    storage_remote_read_max_bytes_in_frame: '1048576'
 # Max time to tolerate prometheus outage for restoring "for" state of alert
-    rules_alert_for_outage_tolerance: '1h'  
+    rules_alert_for_outage_tolerance: '1h'
 # Minimum duration between alert and restored "for" state. This is maintained
 # only for alerts with configured "for" time greater than grace period
-    rules_alert_for_grace_period: '10m'  
+    rules_alert_for_grace_period: '10m'
 # Minimum amount of time to wait before resending an alert to Alertmanager
-    rules_alert_resend_delay: '1m'  
+    rules_alert_resend_delay: '1m'
 # The capacity of the queue for pending Alertmanager notifications
     alertmanager_notification_queue_capacity: '10000'
 # The delta difference allowed for retrieving metrics during expression
