@@ -1,10 +1,10 @@
 ---
 prometheus_service: 'prometheus'
 prometheus_conf_dest: '/etc/prometheus'
-prometheus_package: 'prometheus2'
+prometheus_package: 'prometheus'
 prometheus_bin: '/usr/bin/prometheus'
 alertmanager_service: 'alertmanager'
-alertmanager_conf_dest: '/etc/prometheus'
+alertmanager_conf_dest: '/etc/alertmanager'
 alertmanager_package: 'alertmanager'
 alertmanager_bin: '/usr/bin/alertmanager'
 amtool_conf_dest: '/etc/amtool'
