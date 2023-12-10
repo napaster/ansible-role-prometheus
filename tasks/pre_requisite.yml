@@ -12,29 +12,31 @@
   ansible.builtin.set_fact:
     prometheus_systemd_dir: "{{ '/etc/systemd/system/' +
       hostvars[inventory_hostname]['prometheus_service'] + '.service.d' }}"
-    prometheus_service_settings: "{{
-      hostvars[inventory_hostname]['prometheus'] |
+    prometheus_service_settings:
+      "{{ hostvars[inventory_hostname]['prometheus'] |
       community.general.json_query('[].prometheus_options[]') }}"
     prometheus_lint: "{{ hostvars[inventory_hostname]['prometheus'] |
       community.general.json_query('[].lint | [0]') }}"
-    prometheus_instance_settings: "{{
-      hostvars[inventory_hostname]['prometheus'] |
+    prometheus_instance_settings:
+      "{{ hostvars[inventory_hostname]['prometheus'] |
       community.general.json_query('[].prometheus_settings[] | [0]') }}"
-    prometheus_rules_settings: "{{
-      hostvars[inventory_hostname]['prometheus'] |
+    prometheus_rules_settings:
+      "{{ hostvars[inventory_hostname]['prometheus'] |
       community.general.json_query('[].prometheus_rules[] | [0]') }}"
     prometheus_package_state: "{{ hostvars[inventory_hostname]['prometheus'] |
       community.general.json_query('[].package_state | [0]') }}"
     alertmanager_systemd_dir: "{{ '/etc/systemd/system/' +
       hostvars[inventory_hostname]['alertmanager_service'] + '.service.d' }}"
-    alertmanager_service_settings: "{{
-      hostvars[inventory_hostname]['prometheus'] |
+    alertmanager_service_settings:
+      "{{ hostvars[inventory_hostname]['prometheus'] |
       community.general.json_query('[].alertmanager_options[]') }}"
-    alertmanager_instance_settings: "{{
-      hostvars[inventory_hostname]['prometheus'] |
+    alertmanager_instance_settings:
+      "{{ hostvars[inventory_hostname]['prometheus'] |
       community.general.json_query('[].alertmanager_settings[] | [0]') }}"
-    amtool_instance_settings: "{{
-      hostvars[inventory_hostname]['prometheus'] |
+    alertmanager_instance_templates:
+      "{{ hostvars[inventory_hostname]['prometheus'] |
+      community.general.json_query('[].alertmanager_templates[] | [0]') }}"
+    amtool_instance_settings: "{{ hostvars[inventory_hostname]['prometheus'] |
       community.general.json_query('[].amtool_settings[] | [0]') }}"
 - name: "prometheus | Assert that package state in valid value"
   ansible.builtin.assert:

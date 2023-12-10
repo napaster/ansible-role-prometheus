@@ -2,4 +2,4 @@
 {{ '# ' + ansible_managed }}
 {{ '# ' + 'Do not edit manually' }}
 
-{{ vars['amtool_instance_settings'] | to_nice_yaml }}
+{{ vars['amtool_instance_settings'] | ansible.builtin.to_nice_yaml() }}

@@ -198,8 +198,11 @@ prometheus:
   alertmanager_settings:
     global:
       resolve_timeout: 5m
+  # This path should be defined at least, if you use templates
+    templates:
+      - '/etc/alertmanager/alertmanager.tmpl'
     route:
-      receiver: 'alertmananger-bot'
+      receiver: 'telegram'
       group_by:
         - 'cluster'
         - 'group'
@@ -208,9 +211,31 @@ prometheus:
         - 'severity'
       repeat_interval: '8737h'
     receivers:
-      - name: 'alertmananger-bot'
-        webhook_configs:
-          - url: 'http://127.0.0.1:8085/webhooks/telegram/-030342343'
+      - name: telegram
+        telegram_configs:
+          - api_url: 'https://api.telegram.org'
+            message: '{{ template "telegram.default.message" . }}'
+            parse_mode: MarkdownV2
+  alertmanager_templates: |
+    {%- raw -%}
+    {{ define "__text_alert_list" }}{{ range . }}Labels:
+    {{ range .Labels.SortedPairs }} - {{ .Name }} = {{ .Value }}
+    {{ end }}Annotations:
+    {{ range .Annotations.SortedPairs }} - {{ .Name }} = {{ .Value }}
+    {{ end }}Source: {{ .GeneratorURL }}
+    {{ end }}{{ end }}
+
+    {{ define "telegram.default.message" }}
+    {{ if gt (len .Alerts.Firing) 0 }}
+    Alerts Firing:
+    {{ template "__text_alert_list" .Alerts.Firing }}
+    {{ end }}
+    {{ if gt (len .Alerts.Resolved) 0 }}
+    Alerts Resolved:
+    {{ template "__text_alert_list" .Alerts.Resolved }}
+    {{ end }}
+    {{ end }}
+    {%- endraw -%}
   amtool_settings:
     alertmanager.url: 'htts://alermanager.example.com'
     tls.insecure.skip.verify: 'true'

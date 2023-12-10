@@ -1,4 +1,18 @@
 ---
+- name: "prometheus | Deploy Alertmanager templates"
+  ansible.builtin.copy:
+    content: "{{ vars['alertmanager_instance_templates'] }}"
+    dest: "{{ hostvars[inventory_hostname]['alertmanager_conf_dest'] + '/' +
+      'alertmanager.tmpl' }}"
+    owner: "root"
+    group: "root"
+    mode: "0644"
+  when:
+    - "vars['alertmanager_instance_templates'] is defined"
+    - "vars['alertmanager_instance_templates'] != ''"
+    - "vars['alertmanager_instance_templates'] != []"
+  notify:
+    - "Reload Alertmanager"
 - name: "prometheus | Deploy Alertmanager configuration"
   ansible.builtin.template:
     src: "alertmanager.yml.j2"

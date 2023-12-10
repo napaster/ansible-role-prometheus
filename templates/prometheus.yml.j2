@@ -2,7 +2,7 @@
 {{ '# ' + ansible_managed }}
 {{ '# ' + 'Do not edit manually' }}
 
-{{ prometheus_instance_settings | to_nice_yaml }}
+{{ prometheus_instance_settings | ansible.builtin.to_nice_yaml() }}
 {% if vars['prometheus_rules_settings'] is defined and
   vars['prometheus_rules_settings'] != '' %}
 {{ 'rule_files:\n  - ' +

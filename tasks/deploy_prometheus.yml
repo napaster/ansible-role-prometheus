@@ -14,6 +14,7 @@
   when:
     - "vars['prometheus_rules_settings'] is defined"
     - "vars['prometheus_rules_settings'] != ''"
+    - "vars['prometheus_rules_settings'] != []"
   notify:
     - "Reload Prometheus"
 - name: "prometheus | Deploy Prometheus configuration"
