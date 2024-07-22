@@ -33,6 +33,9 @@
     alertmanager_instance_settings:
       "{{ hostvars[inventory_hostname]['prometheus'] |
       community.general.json_query('[].alertmanager_settings[] | [0]') }}"
+    alertmanager_instance_gossip:
+      "{{ hostvars[inventory_hostname]['prometheus'] |
+      community.general.json_query('[].alertmanager_gossip[] | [0]') }}"
     alertmanager_instance_templates:
       "{{ hostvars[inventory_hostname]['prometheus'] |
       community.general.json_query('[].alertmanager_templates[] | [0]') }}"

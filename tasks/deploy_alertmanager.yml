@@ -13,6 +13,20 @@
     - "vars['alertmanager_instance_templates'] != []"
   notify:
     - "Reload Alertmanager"
+- name: "prometheus | Deploy Alertmanager Gossip TLS settings"
+  ansible.builtin.template:
+    src: "gossip.yml.j2"
+    dest: "{{ hostvars[inventory_hostname]['alertmanager_conf_dest'] + '/' +
+      'gossip.yml' }}"
+    owner: "root"
+    group: "root"
+    mode: "0644"
+  when:
+    - "vars['alertmanager_instance_gossip'] is defined"
+    - "vars['alertmanager_instance_gossip'] != ''"
+    - "vars['alertmanager_instance_gossip'] != []"
+  notify:
+    - "Reload Alertmanager"
 - name: "prometheus | Deploy Alertmanager configuration"
   ansible.builtin.template:
     src: "alertmanager.yml.j2"

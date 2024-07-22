@@ -1,0 +1,5 @@
+{{ '## ' + 'gossip.yml' }}
+{{ '# ' + ansible_managed }}
+{{ '# ' + 'Do not edit manually' }}
+
+{{ vars['alertmanager_instance_gossip'] | ansible.builtin.to_nice_yaml() }}

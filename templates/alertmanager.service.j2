@@ -44,10 +44,18 @@
 {{ ' \\' }}
 {{ '--web.timeout=' + o['web_timeout'] -}}
 {% endif %}
+{% if o['cluster_tls_config'] is defined and o['cluster_tls_config'] != '' %}
+{{ ' \\' }}
+{{ '--cluster.tls-config=' + o['cluster_tls_config'] -}}
+{% endif %}
 {% if o['cluster_listen_address'] is defined and
   o['cluster_listen_address'] != '' %}
 {{ ' \\' }}
 {{ '--cluster.listen-address=' + o['cluster_listen_address'] -}}
+{% elif o['cluster_listen_address'] is defined and
+  o['cluster_listen_address'] in ['', ""] %}
+{{ ' \\' }}
+{{ '--cluster.listen-address=""' -}}
 {% endif %}
 {% if o['cluster_advertise_address'] is defined and
   o['cluster_advertise_address'] != '' %}
@@ -55,8 +63,15 @@
 {{ '--cluster.advertise-address=' + o['cluster_advertise_address'] -}}
 {% endif %}
 {% if o['cluster_peer'] is defined and o['cluster_peer'] != '' %}
+{% if o['cluster_peer'] is string %}
 {{ ' \\' }}
 {{ '--cluster.peer=' + o['cluster_peer'] -}}
+{% elif o['cluster_peer'] is sequence %}
+{% for ocp in o['cluster_peer'] %}
+{{ ' \\' }}
+{{ '--cluster.peer=' + ocp -}}
+{% endfor %}
+{% endif %}
 {% endif %}
 {% if o['cluster_peer_timeout'] is defined and
   o['cluster_peer_timeout'] != '' %}
@@ -102,6 +117,10 @@
   o['cluster_reconnect_timeout'] != '' %}
 {{ ' \\' }}
 {{ '--cluster.reconnect-timeout=' + o['cluster_reconnect_timeout'] -}}
+{% endif %}
+{% if o['cluster_label'] is defined and o['cluster_label'] != '' %}
+{{ ' \\' }}
+{{ '--cluster.label=' + o['cluster_label'] -}}
 {% endif %}
 {% if o['log_level'] is defined and
   o['log_level'] in ['debug', 'info', 'warn', 'error'] %}
