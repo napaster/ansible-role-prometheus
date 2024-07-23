@@ -2,4 +2,4 @@
 {{ '# ' + ansible_managed }}
 {{ '# ' + 'Do not edit manually' }}
 
-{{ prometheus_rules_settings | ansible.builtin.to_nice_yaml() }}
+{{ vars['prometheus_rules_settings'] | ansible.builtin.to_nice_yaml() }}
