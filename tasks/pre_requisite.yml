@@ -49,7 +49,14 @@
     quiet: "true"
   when:
     - "vars['prometheus_package_state'] is defined"
+    - "vars['prometheus_package_state'] != []"
     - "vars['prometheus_package_state'] != ''"
+- name: "prometheus | Set package state to 'present' cause value is not defined"
+  ansible.builtin.set_fact:
+    prometheus_package_state: "present"
+  when:
+    - "vars['prometheus_package_state'] is defined"
+    - "vars['prometheus_package_state'] == ''"
 - name: "prometheus | Create override systemd prometheus service directory"
   ansible.builtin.file:
     path: "{{ vars['prometheus_systemd_dir'] }}"

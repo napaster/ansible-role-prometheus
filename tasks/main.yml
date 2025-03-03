@@ -47,7 +47,7 @@
 - name: "prometheus | Include Prometheus deployment tasks"
   ansible.builtin.import_tasks:
     file: "deploy_prometheus.yml"
-- name: "systemd_helper | Flush handlers"
+- name: "prometheus | Flush handlers"
   ansible.builtin.meta: "flush_handlers"
 - name: "prometheus | Include Alertmanager deployment tasks"
   ansible.builtin.import_tasks:

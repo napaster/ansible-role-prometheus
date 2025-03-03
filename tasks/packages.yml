@@ -1,22 +1,37 @@
 ---
 - name: "prometheus | Install the required packages in Redhat derivatives"
-  ansible.builtin.dnf:
-    name: "{{ vars['prometheus_package_name'] }}"
-    state: "{{ vars['prometheus_package_state'] | default(omit) }}"
-    update_cache: "yes"
   when:
     - "hostvars[inventory_hostname]['ansible_os_family'] == 'RedHat'"
+  block:
+    - name: "prometheus | Update dnf cache"
+      ansible.builtin.dnf:
+        update_cache: "yes"
+    - name: "{{ 'prometheus | Install ' + vars['prometheus_package_name'] +
+        ' package with dnf' }}"
+      ansible.builtin.dnf:
+        name: "{{ vars['prometheus_package_name'] }}"
+        state: "{{ vars['prometheus_package_state'] | default(omit) }}"
 - name: "prometheus | Install the required packages in Debian derivatives"
-  ansible.builtin.apt:
-    name: "{{ vars['prometheus_package_name'] }}"
-    state: "{{ vars['prometheus_package_state'] | default(omit) }}"
-    update_cache: "yes"
   when:
     - "hostvars[inventory_hostname]['ansible_os_family'] == 'Debian'"
+  block:
+    - name: "prometheus | Update apt cache"
+      ansible.builtin.apt:
+        update_cache: "yes"
+    - name: "{{ 'prometheus | Install ' + vars['prometheus_package_name'] +
+        ' package with apt' }}"
+      ansible.builtin.apt:
+        name: "{{ vars['prometheus_package_name'] }}"
+        state: "{{ vars['prometheus_package_state'] | default(omit) }}"
 - name: "prometheus | Install the required packages in ArchLinux derivatives"
-  community.general.pacman:
-    name: "{{ vars['prometheus_package_name'] }}"
-    state: "{{ vars['prometheus_package_state'] | default(omit) }}"
-    update_cache: "yes"
   when:
     - "hostvars[inventory_hostname]['ansible_os_family'] == 'Archlinux'"
+  block:
+    - name: "prometheus | Update pacman cache"
+      community.general.pacman:
+        update_cache: "yes"
+    - name: "{{ 'prometheus | Install ' + vars['prometheus_package_name'] +
+        ' package with pacman' }}"
+      community.general.pacman:
+        name: "{{ vars['prometheus_package_name'] }}"
+        state: "{{ vars['prometheus_package_state'] | default(omit) }}"
