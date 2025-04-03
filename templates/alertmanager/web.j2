@@ -1,0 +1,15 @@
+{% if ow['listen_address'] is defined and ow['listen_address'] != '' %}
+{{ ' --web.listen-address=\'' + ow['listen_address'] + '\'' -}}
+{% endif %}
+{% if ow['external_url'] is defined and ow['external_url'] != '' %}
+{{ ' --web.external-url=\'' + ow['external_url'] + '\'' -}}
+{% endif %}
+{% if ow['route_prefix'] is defined and ow['route_prefix'] != '' %}
+{{ ' --web.route-prefix=\'' + ow['route_prefix'] + '\'' -}}
+{% endif %}
+{% if ow['get_concurrency'] is defined and ow['get_concurrency'] != '' %}
+{{ ' --web.get-concurrency=\'' ~ ow['get_concurrency'] ~ '\'' -}}
+{% endif %}
+{% if ow['timeout'] is defined and ow['timeout'] != '' %}
+{{ ' --web.timeout=\'' ~ ow['timeout'] ~ '\'' -}}
+{% endif %}

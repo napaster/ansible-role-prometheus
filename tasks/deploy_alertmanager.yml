@@ -9,8 +9,8 @@
     mode: "0644"
   when:
     - "vars['alertmanager_instance_templates'] is defined"
-    - "vars['alertmanager_instance_templates'] != ''"
     - "vars['alertmanager_instance_templates'] != []"
+    - "vars['alertmanager_instance_templates'] != ''"
   notify:
     - "Reload Alertmanager"
 - name: "prometheus | Deploy Alertmanager Gossip TLS settings"
@@ -23,11 +23,11 @@
     mode: "0644"
   when:
     - "vars['alertmanager_instance_gossip'] is defined"
-    - "vars['alertmanager_instance_gossip'] != ''"
     - "vars['alertmanager_instance_gossip'] != []"
+    - "vars['alertmanager_instance_gossip'] != ''"
   notify:
     - "Reload Alertmanager"
-- name: "prometheus | Deploy Alertmanager configuration"
+- name: "prometheus | Deploy Alertmanager YAML configuration"
   ansible.builtin.template:
     src: "alertmanager.yml.j2"
     dest: "{{ hostvars[inventory_hostname]['alertmanager_conf_dest'] + '/' +
@@ -38,20 +38,18 @@
     validate: "amtool check-config %s"
   when:
     - "vars['alertmanager_instance_settings'] is defined"
+    - "vars['alertmanager_instance_settings'] != []"
     - "vars['alertmanager_instance_settings'] != ''"
   notify:
     - "Reload Alertmanager"
 - name: "prometheus | Deploy Alertmanager service configuration"
   ansible.builtin.template:
-    src: "alertmanager.service.j2"
-    dest: "{{ vars['alertmanager_systemd_dir'] + '/' +
-      hostvars[inventory_hostname]['alertmanager_service'] + '.conf' }}"
+    src: "alertmanager_options.j2"
+    dest: "{{ hostvars[inventory_hostname]['prometheus_options_dest'] + '/' +
+      hostvars[inventory_hostname]['alertmanager_service'] }}"
     owner: "root"
     group: "root"
     mode: "0644"
-  when:
-    - "vars['alertmanager_service_settings'] is defined"
-    - "vars['alertmanager_service_settings'] != []"
   notify:
     - "Restart Alertmanager"
 - name: "prometheus | Ensure Alertmanager service is started"
@@ -64,8 +62,8 @@
     - "hostvars[inventory_hostname]['prometheus'] |
       community.general.json_query(vars['alertmanager_started']) == 'true'"
   vars:
-    alertmanager_started:
-      "[].started[] | map(&alertmanager || 'false', @) | [0]"
+    alertmanager_started: "[].started[] |
+      map(&alertmanager || 'false', @) | [0]"
 - name: "prometheus | Enable Alertmanager service"
   ansible.builtin.systemd:
     name: "{{ hostvars[inventory_hostname]['alertmanager_service'] }}"

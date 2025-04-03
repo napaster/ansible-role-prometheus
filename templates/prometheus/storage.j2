@@ -1,0 +1,39 @@
+{% if os['tsdb_retention_time'] is defined and
+  os['tsdb_retention_time'] != '' %}
+{{ ' --storage.tsdb.retention.time=\'' ~ os['tsdb_retention_time'] ~ '\'' -}}
+{% endif %}
+{% if os['tsdb_retention_size'] is defined and
+  os['tsdb_retention_size'] != '' %}
+{{ ' --storage.tsdb.retention.size=\'' ~ os['tsdb_retention_size'] ~ '\'' -}}
+{% endif %}
+{% if os['tsdb_no_lockfile'] is defined and os['tsdb_no_lockfile'] == 'true' %}
+{{ ' --storage.tsdb.no-lockfile' -}}
+{% endif %}
+{% if os['tsdb_allow_overlapping_blocks'] is defined and
+  os['tsdb_allow_overlapping_blocks'] == 'true' %}
+{{ ' --storage.tsdb.allow-overlapping-blocks' -}}
+{% endif %}
+{% if os['tsdb_wal_compression'] is defined and
+  os['tsdb_wal_compression'] == 'true' %}
+{{ ' --storage.tsdb.wal-compression' -}}
+{% endif %}
+{% if os['remote_flush_deadline'] is defined and
+  os['remote_flush_deadline'] != '' %}
+{{ ' --storage.remote.flush-deadline=\'' +
+  os['remote_flush_deadline'] + '\'' -}}
+{% endif %}
+{% if os['remote_read_sample_limit'] is defined and
+  os['remote_read_sample_limit'] != '' %}
+{{ ' --storage.remote.read-sample-limit=\'' ~
+  os['remote_read_sample_limit'] ~ '\'' -}}
+{% endif %}
+{% if os['remote_read_concurrent_limit'] is defined and
+  os['remote_read_concurrent_limit'] != '' %}
+{{ ' --storage.remote.read-concurrent-limit=\'' ~
+  os['remote_read_concurrent_limit'] ~ '\'' -}}
+{% endif %}
+{% if os['remote_read_max_bytes_in_frame'] is defined and
+  os['remote_read_max_bytes_in_frame'] != '' %}
+{{ ' --storage.remote.read-max-bytes-in-frame=\'' ~
+  os['remote_read_max_bytes_in_frame'] ~ '\'' -}}
+{% endif %}

@@ -1,4 +1,5 @@
 ---
+prometheus_options_dest: '/etc/conf.d'
 prometheus_service: 'prometheus'
 prometheus_conf_dest: '/etc/prometheus'
 prometheus_package: 'prometheus'

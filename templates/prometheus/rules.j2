@@ -1,0 +1,18 @@
+{% if oru['alert_for_outage_tolerance'] is defined and
+  oru['alert_for_outage_tolerance'] != '' %}
+{{ ' --rules.alert.for-outage-tolerance=\'' +
+  oru['alert_for_outage_tolerance'] + '\'' -}}
+{% endif %}
+{% if oru['alert_for_grace_period'] is defined and
+  oru['alert_for_grace_period'] != '' %}
+{{ ' --rules.alert.for-grace-period=\'' +
+  oru['alert_for_grace_period'] + '\'' -}}
+{% endif %}
+{% if oru['alert_resend_delay'] is defined and
+  oru['alert_resend_delay'] != '' %}
+{{ ' --rules.alert.resend-delay=\'' + oru['alert_resend_delay'] + '\'' -}}
+{% endif %}
+{% if oru['max_concurrent_evals'] is defined and
+  oru['max_concurrent_evals'] != '' %}
+{{ ' --rules.max-concurrent-evals=\'' ~ oru['max_concurrent_evals'] ~ '\'' -}}
+{% endif %}

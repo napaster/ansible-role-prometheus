@@ -1,0 +1,49 @@
+{{ '## prometheus' }}
+{{ '# ' + ansible_managed }}
+{{ '# Do not edit manually' }}
+
+{% if vars['prometheus_service_settings'] is defined and
+  vars['prometheus_service_settings'] != '' %}
+{% for o in vars['prometheus_service_settings'] %}
+{% if loop['first'] %}
+{{ 'PROMETHEUS_ARGS=\"' -}}
+{% endif %}
+{% if o['web'] is defined and o['web'] != '' %}
+{% for ow in o['web'] %}
+{%- include 'prometheus/web.j2' -%}
+{% endfor %}
+{% endif %}
+{% if o['storage'] is defined and o['storage'] != '' %}
+{% for os in o['storage'] %}
+{%- include 'prometheus/storage.j2' -%}
+{% endfor %}
+{% endif %}
+{% if o['rules'] is defined and o['rules'] != '' %}
+{% for oru in o['rules'] %}
+{%- include 'prometheus/rules.j2' -%}
+{% endfor %}
+{% endif %}
+{% if o['query'] is defined and o['query'] != '' %}
+{% for oq in o['query'] %}
+{%- include 'prometheus/query.j2' -%}
+{% endfor %}
+{% endif %}
+{% if o['alertmanager'] is defined and o['alertmanager'] != '' %}
+{% for oam in o['alertmanager'] %}
+{%- include 'prometheus/alertmanager.j2' -%}
+{% endfor %}
+{% endif %}
+{% if o['log_level'] is defined and o['log_level'] in ['debug', 'info', 'warn',
+'error'] %}
+{{ ' --log.level=\'' + o['log_level'] + '\'' -}}
+{% endif %}
+{% if o['log_format'] is defined and o['log_format'] in ['logfmt', 'json'] %}
+{{ ' --log.format=\'' + o['log_format'] + '\'' -}}
+{% endif %}
+{% if loop['last'] %}
+{{- '\"' }}
+{% endif %}
+{% endfor %}
+{% else %}
+{{ 'PROMETHEUS_ARGS=\"\"' }}
+{% endif %}

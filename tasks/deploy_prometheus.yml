@@ -7,17 +7,18 @@
     owner: "root"
     group: "root"
     mode: "0644"
-    validate: "{{ 'promtool check rules' }}
+    validate: "{{ 'promtool check rules --lint-fatal' }}
       {%- if vars['prometheus_lint'] is defined and vars['prometheus_lint']
       in ['all', 'duplicate-rules', 'none'] -%}
-      {{ ' --lint=' + vars['prometheus_lint'] }}{%- endif -%} {{ ' %s' }}"
+      {{ ' --lint=\"' + vars['prometheus_lint'] + '\"' }}{%- endif -%}
+      {{ ' %s' }}"
   when:
     - "vars['prometheus_rules_settings'] is defined"
-    - "vars['prometheus_rules_settings'] != ''"
     - "vars['prometheus_rules_settings'] != []"
+    - "vars['prometheus_rules_settings'] != ''"
   notify:
     - "Reload Prometheus"
-- name: "prometheus | Deploy Prometheus configuration"
+- name: "prometheus | Deploy Prometheus YAML configuration"
   ansible.builtin.template:
     src: "prometheus.yml.j2"
     dest: "{{ hostvars[inventory_hostname]['prometheus_conf_dest'] + '/' +
@@ -25,26 +26,25 @@
     owner: "root"
     group: "root"
     mode: "0644"
-    validate: "{{ 'promtool check config' }}
+    validate: "{{ 'promtool check config --lint-fatal' }}
       {%- if vars['prometheus_lint'] is defined and vars['prometheus_lint']
       in ['all', 'duplicate-rules', 'none'] -%}
-      {{ ' --lint=' + vars['prometheus_lint'] }}{%- endif -%} {{ ' %s' }}"
+      {{ ' --lint=\"' + vars['prometheus_lint'] + '\"' }}{%- endif -%}
+      {{ ' %s' }}"
   when:
     - "vars['prometheus_instance_settings'] is defined"
+    - "vars['prometheus_instance_settings'] != []"
     - "vars['prometheus_instance_settings'] != ''"
   notify:
     - "Reload Prometheus"
 - name: "prometheus | Deploy Prometheus service configuration"
   ansible.builtin.template:
-    src: "prometheus.service.j2"
-    dest: "{{ vars['prometheus_systemd_dir'] + '/' +
-      hostvars[inventory_hostname]['prometheus_service'] + '.conf' }}"
+    src: "prometheus_options.j2"
+    dest: "{{ hostvars[inventory_hostname]['prometheus_options_dest'] + '/' +
+      hostvars[inventory_hostname]['prometheus_service'] }}"
     owner: "root"
     group: "root"
     mode: "0644"
-  when:
-    - "vars['prometheus_service_settings'] is defined"
-    - "vars['prometheus_service_settings'] != []"
   notify:
     - "Restart Prometheus"
 - name: "prometheus | Ensure Prometheus service is started"

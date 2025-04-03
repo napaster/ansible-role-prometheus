@@ -1,0 +1,6 @@
+{% if os['max'] is defined and os['max'] != '' %}
+{{ ' --silences.max-silences=\'' + os['max'] + '\'' -}}
+{% endif %}
+{% if os['max_size_bytes'] is defined and os['max_size_bytes'] != '' %}
+{{ ' --silences.max-silence-size-bytes=\'' + os['max_size_bytes'] + '\'' -}}
+{% endif %}

@@ -1,5 +1,5 @@
-{{ '## ' + 'gossip.yml' }}
+{{ '## gossip.yml' }}
 {{ '# ' + ansible_managed }}
-{{ '# ' + 'Do not edit manually' }}
+{{ '# Do not edit manually' }}
 
 {{ alertmanager_instance_gossip | ansible.builtin.to_nice_yaml() }}

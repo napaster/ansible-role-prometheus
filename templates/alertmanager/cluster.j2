@@ -1,0 +1,52 @@
+{% if oc['tls_config'] is defined and oc['tls_config'] != '' %}
+{{ ' --cluster.tls-config=\'' + oc['tls_config'] + '\'' -}}
+{% endif %}
+{% if oc['listen_address'] is defined and oc['listen_address'] != '' %}
+{{ ' --cluster.listen-address=\'' + oc['listen_address'] + '\'' -}}
+{% elif oc['listen_address'] is defined and oc['listen_address'] in ['', ""] %}
+{{ ' --cluster.listen-address=\'\'' -}}
+{% elif oc['listen_address'] is not defined %}
+{{ ' --cluster.listen-address=\'\'' -}}
+{% endif %}
+{% if oc['advertise_address'] is defined and oc['advertise_address'] != '' %}
+{{ ' --cluster.advertise-address=\'' + oc['advertise_address'] + '\'' -}}
+{% endif %}
+{% if oc['peer'] is defined and oc['peer'] != '' %}
+{% if oc['peer'] is string %}
+{{ ' --cluster.peer=\'' + oc['peer'] + '\'' -}}
+{% elif oc['peer'] is sequence %}
+{% for ocp in oc['peer'] %}
+{{ '--cluster.peer=\'' + ocp + '\'' -}}
+{% endfor %}
+{% endif %}
+{% endif %}
+{% if oc['peer_timeout'] is defined and oc['peer_timeout'] != '' %}
+{{ ' --cluster.peer-timeout=\'' + oc['peer_timeout'] + '\'' -}}
+{% endif %}
+{% if oc['gossip_interval'] is defined and oc['gossip_interval'] != '' %}
+{{ ' --cluster.gossip-interval=\'' + oc['gossip_interval'] + '\'' -}}
+{% endif %}
+{% if oc['pushpull_interval'] is defined and oc['pushpull_interval'] != '' %}
+{{ ' --cluster.pushpull-interval=\'' + oc['pushpull_interval'] + '\'' -}}
+{% endif %}
+{% if oc['tcp_timeout'] is defined and oc['tcp_timeout'] != '' %}
+{{ ' --cluster.tcp.timeout=\'' + oc['tcp_timeout'] + '\'' -}}
+{% endif %}
+{% if oc['probe_timeout'] is defined and oc['probe_timeout'] != '' %}
+{{ ' --cluster.probe-timeout=\'' + oc['probe_timeout'] + '\'' -}}
+{% endif %}
+{% if oc['probe_interval'] is defined and oc['probe_interval'] != '' %}
+{{ ' --cluster.probe-interval=\'' + oc['probe_interval'] + '\'' -}}
+{% endif %}
+{% if oc['settle_timeout'] is defined and oc['settle_timeout'] != '' %}
+{{ ' --cluster.settle-timeout=\'' + oc['settle_timeout'] + '\'' -}}
+{% endif %}
+{% if oc['reconnect_interval'] is defined and oc['reconnect_interval'] != '' %}
+{{ ' --cluster.reconnect-interval=\'' + oc['reconnect_interval'] + '\'' -}}
+{% endif %}
+{% if oc['reconnect_timeout'] is defined and oc['reconnect_timeout'] != '' %}
+{{ ' --cluster.reconnect-timeout=\'' + oc['reconnect_timeout'] + '\'' -}}
+{% endif %}
+{% if oc['label'] is defined and oc['label'] != '' %}
+{{ ' --cluster.label=\'' + oc['label'] + '\'' -}}
+{% endif %}

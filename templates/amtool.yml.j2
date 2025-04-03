@@ -1,5 +1,5 @@
-{{ '## ' + 'amtool.yml' }}
+{{ '## amtool.yml' }}
 {{ '# ' + ansible_managed }}
-{{ '# ' + 'Do not edit manually' }}
+{{ '# Do not edit manually' }}
 
 {{ amtool_instance_settings | ansible.builtin.to_nice_yaml() }}

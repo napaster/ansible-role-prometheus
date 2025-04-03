@@ -1,0 +1,50 @@
+{{ '## alertmanager' }}
+{{ '# ' + ansible_managed }}
+{{ '# Do not edit manually' }}
+
+{% if vars['alertmanager_service_settings'] is defined and
+  vars['alertmanager_service_settings'] != '' %}
+{% for o in vars['alertmanager_service_settings'] %}
+{% if loop['first'] %}
+{{ 'ALERTMANAGER_ARGS=\"' -}}
+{% endif %}
+{% if o['web'] is defined and o['web'] != '' %}
+{% for ow in o['web'] %}
+{%- include 'alertmanager/web.j2' -%}
+{% endfor %}
+{% endif %}
+{% if o['data'] is defined and o['data'] != '' %}
+{% for od in o['data'] %}
+{%- include 'alertmanager/data.j2' -%}
+{% endfor %}
+{% endif %}
+{% if o['silences'] is defined and o['silences'] != '' %}
+{% for os in o['silences'] %}
+{%- include 'alertmanager/silences.j2' -%}
+{% endfor %}
+{% endif %}
+{% if o['cluster'] is defined and o['cluster'] != '' %}
+{% for oc in o['cluster'] %}
+{%- include 'alertmanager/cluster.j2' -%}
+{% endfor %}
+{% elif o['cluster'] is not defined or (o['cluster'] is defined and
+  o['cluster'] == '') %}
+{{ ' --cluster.listen-address=\'\'' -}}
+{% endif %}
+{% if o['alerts_gc_interval'] is defined and o['alerts_gc_interval'] != '' %}
+{{ ' --alerts.gc-interval=\'' + o['alerts_gc_interval'] + '\'' -}}
+{% endif %}
+{% if o['log_level'] is defined and o['log_level'] in ['debug', 'info', 'warn',
+'error'] %}
+{{ ' --log.level=\'' + o['log_level'] + '\'' -}}
+{% endif %}
+{% if o['log_format'] is defined and o['log_format'] in ['logfmt', 'json'] %}
+{{ ' --log.format=\'' + o['log_format'] + '\'' -}}
+{% endif %}
+{% if loop['last'] %}
+{{- '\"' }}
+{% endif %}
+{% endfor %}
+{% else %}
+{{ 'ALERTMANAGER_ARGS=\"\"' }}
+{% endif %}

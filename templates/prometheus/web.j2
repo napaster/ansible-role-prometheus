@@ -1,0 +1,58 @@
+{% if ow['config_file'] is defined and ow['config_file'] != '' %}
+{{ ' --web.config.file=\'' + ow['config_file'] + '\'' -}}
+{% endif %}
+{% if ow['listen_address'] is defined and ow['listen_address'] != '' %}
+{{ ' --web.listen-address=\'' + ow['listen_address'] + '\'' -}}
+{% endif %}
+{% if ow['read_timeout'] is defined and ow['read_timeout'] != '' %}
+{{ ' --web.read-timeout=\'' ~ ow['read_timeout'] ~ '\'' -}}
+{% endif %}
+{% if ow['max_connections'] is defined and ow['max_connections'] != '' %}
+{{ ' --web.max-connections=\'' ~ ow['max_connections'] ~ '\'' -}}
+{% endif %}
+{% if ow['external_url'] is defined and ow['external_url'] != '' %}
+{{ ' --web.external-url=\'' + ow['external_url'] + '\'' -}}
+{% endif %}
+{% if ow['route_prefix'] is defined and ow['route_prefix'] != '' %}
+{{ ' --web.route-prefix=\'' + ow['route_prefix'] + '\'' -}}
+{% endif %}
+{% if ow['user_assets'] is defined and ow['user_assets'] != '' %}
+{{ ' --web.user-assets=\'' + ow['user_assets'] + '\'' -}}
+{% endif %}
+{% if ow['enable_lifecycle'] is defined and ow['enable_lifecycle'] in 'true' %}
+{{ ' --web.enable-lifecycle' -}}
+{% endif %}
+{% if ow['enable_admin_api'] is defined and ow['enable_admin_api'] in 'true' %}
+{{ ' --web.enable-admin-api' -}}
+{% endif %}
+{% if ow['enable_remote_write_receiver'] is defined and
+  ow['enable_remote_write_receiver'] in 'true' %}
+{{ ' --web.enable-remote-write-receiver' -}}
+{% endif %}
+{% if ow['remote_write_receiver_accepted_protobuf_messages'] is defined and
+  ow['remote_write_receiver_accepted_protobuf_messages'] != '' %}
+{% if ow['remote_write_receiver_accepted_protobuf_messages'] is string %}
+{{ ' --web.remote-write-receiver.accepted-protobuf-messages=\'' +
+  ow['remote_write_receiver_accepted_protobuf_messages'] + '\'' -}}
+{% elif ow['remote_write_receiver_accepted_protobuf_messages'] is sequence %}
+{{ ' --web.remote-write-receiver.accepted-protobuf-messages=\'' +
+  (ow['remote_write_receiver_accepted_protobuf_messages'] | join(",")) +
+  '\'' -}}
+{% endif %}
+{% endif %}
+{% if ow['enable_otlp_receiver'] is defined and
+  ow['enable_otlp_receiver'] in 'true' %}
+{{ ' --web.enable-otlp-receiver' -}}
+{% endif %}
+{% if ow['console_templates'] is defined and ow['console_templates'] != '' %}
+{{ ' --web.console.templates=\'' + ow['console_templates'] + '\'' -}}
+{% endif %}
+{% if ow['console_libraries'] is defined and ow['console_libraries'] != '' %}
+{{ ' --web.console.libraries=\'' + ow['console_libraries'] + '\'' -}}
+{% endif %}
+{% if ow['page_title'] is defined and ow['page_title'] != '' %}
+{{ ' --web.page-title=\'' ~ ow['page_title'] ~ '\'' -}}
+{% endif %}
+{% if ow['cors_origin'] is defined and ow['cors_origin'] != '' %}
+{{ ' --web.cors.origin=\'' + ow['cors_origin'] + '\'' -}}
+{% endif %}

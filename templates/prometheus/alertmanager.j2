@@ -1,0 +1,9 @@
+{% if oam['notification_queue_capacity'] is defined and
+  oam['notification_queue_capacity'] != '' %}
+{{ ' --alertmanager.notification-queue-capacity=\'' ~
+  oam['notification_queue_capacity'] + '\'' -}}
+{% endif %}
+{% if oam['drain_notification_queue_on_shutdown'] is defined and
+  oam['drain_notification_queue_on_shutdown'] in 'true' %}
+{{ ' --alertmanager.drain-notification-queue-on-shutdown' -}}
+{% endif %}

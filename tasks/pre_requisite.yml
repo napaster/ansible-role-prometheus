@@ -10,8 +10,6 @@
     file: "{{ hostvars[inventory_hostname]['ansible_os_family'] + '.yml' }}"
 - name: "prometheus | Set facts about prometheus role"
   ansible.builtin.set_fact:
-    prometheus_systemd_dir: "{{ '/etc/systemd/system/' +
-      hostvars[inventory_hostname]['prometheus_service'] + '.service.d' }}"
     prometheus_service_settings:
       "{{ hostvars[inventory_hostname]['prometheus'] |
       community.general.json_query('[].prometheus_options[]') }}"
@@ -25,8 +23,6 @@
       community.general.json_query('[].prometheus_rules[] | [0]') }}"
     prometheus_package_state: "{{ hostvars[inventory_hostname]['prometheus'] |
       community.general.json_query('[].package_state | [0]') }}"
-    alertmanager_systemd_dir: "{{ '/etc/systemd/system/' +
-      hostvars[inventory_hostname]['alertmanager_service'] + '.service.d' }}"
     alertmanager_service_settings:
       "{{ hostvars[inventory_hostname]['prometheus'] |
       community.general.json_query('[].alertmanager_options[]') }}"
@@ -57,28 +53,6 @@
   when:
     - "vars['prometheus_package_state'] is defined"
     - "vars['prometheus_package_state'] == ''"
-- name: "prometheus | Create override systemd prometheus service directory"
-  ansible.builtin.file:
-    path: "{{ vars['prometheus_systemd_dir'] }}"
-    state: "directory"
-    group: "root"
-    owner: "root"
-    mode: "0755"
-    recurse: "no"
-  when:
-    - "vars['prometheus_service_settings'] is defined"
-    - "vars['prometheus_service_settings'] != []"
-- name: "prometheus | Create override systemd alertmanager service directory"
-  ansible.builtin.file:
-    path: "{{ vars['alertmanager_systemd_dir'] }}"
-    state: "directory"
-    group: "root"
-    owner: "root"
-    mode: "0755"
-    recurse: "no"
-  when:
-    - "vars['alertmanager_service_settings'] is defined"
-    - "vars['alertmanager_service_settings'] != []"
 - name: "prometheus | Create Prometheus directory"
   ansible.builtin.file:
     path: "{{ hostvars[inventory_hostname]['prometheus_conf_dest'] }}"

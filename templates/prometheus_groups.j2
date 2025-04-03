@@ -1,5 +1,5 @@
-{{ '## ' + 'prometheus_groups.yml' }}
+{{ '## prometheus_groups.yml' }}
 {{ '# ' + ansible_managed }}
-{{ '# ' + 'Do not edit manually' }}
+{{ '# Do not edit manually' }}
 
 {{ vars['prometheus_rules_settings'] | ansible.builtin.to_nice_yaml() }}
