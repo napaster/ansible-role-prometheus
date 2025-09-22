@@ -16,6 +16,7 @@
     - "vars['prometheus_rules_settings'] is defined"
     - "vars['prometheus_rules_settings'] != []"
     - "vars['prometheus_rules_settings'] != ''"
+    - "vars['prometheus_rules_settings'] != None"
   notify:
     - "Reload Prometheus"
 - name: "prometheus | Deploy Prometheus YAML configuration"
@@ -35,6 +36,7 @@
     - "vars['prometheus_instance_settings'] is defined"
     - "vars['prometheus_instance_settings'] != []"
     - "vars['prometheus_instance_settings'] != ''"
+    - "vars['prometheus_instance_settings'] != None"
   notify:
     - "Reload Prometheus"
 - name: "prometheus | Deploy Prometheus service configuration"

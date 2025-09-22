@@ -47,12 +47,14 @@
     - "vars['prometheus_package_state'] is defined"
     - "vars['prometheus_package_state'] != []"
     - "vars['prometheus_package_state'] != ''"
+    - "vars['prometheus_package_state'] != None"
 - name: "prometheus | Set package state to 'present' cause value is not defined"
   ansible.builtin.set_fact:
     prometheus_package_state: "present"
   when:
     - "vars['prometheus_package_state'] is defined"
-    - "vars['prometheus_package_state'] == ''"
+    - "(vars['prometheus_package_state'] == '' or
+      vars['prometheus_package_state'] == None)"
 - name: "prometheus | Create Prometheus directory"
   ansible.builtin.file:
     path: "{{ hostvars[inventory_hostname]['prometheus_conf_dest'] }}"

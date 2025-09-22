@@ -11,6 +11,7 @@
     - "vars['alertmanager_instance_templates'] is defined"
     - "vars['alertmanager_instance_templates'] != []"
     - "vars['alertmanager_instance_templates'] != ''"
+    - "vars['alertmanager_instance_templates'] != None"
   notify:
     - "Reload Alertmanager"
 - name: "prometheus | Deploy Alertmanager Gossip TLS settings"
@@ -25,6 +26,7 @@
     - "vars['alertmanager_instance_gossip'] is defined"
     - "vars['alertmanager_instance_gossip'] != []"
     - "vars['alertmanager_instance_gossip'] != ''"
+    - "vars['alertmanager_instance_gossip'] != None"
   notify:
     - "Reload Alertmanager"
 - name: "prometheus | Deploy Alertmanager YAML configuration"
@@ -40,6 +42,7 @@
     - "vars['alertmanager_instance_settings'] is defined"
     - "vars['alertmanager_instance_settings'] != []"
     - "vars['alertmanager_instance_settings'] != ''"
+    - "vars['alertmanager_instance_settings'] != None"
   notify:
     - "Reload Alertmanager"
 - name: "prometheus | Deploy Alertmanager service configuration"
