@@ -9,6 +9,4 @@
     mode: "0644"
   when:
     - "vars['amtool_instance_settings'] is defined"
-    - "vars['amtool_instance_settings'] != []"
-    - "vars['amtool_instance_settings'] != ''"
-    - "vars['amtool_instance_settings'] != None"
+    - "vars['amtool_instance_settings'] not in ['', [], None]"

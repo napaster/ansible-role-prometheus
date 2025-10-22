@@ -13,7 +13,7 @@
         file: "packages.yml"
       when:
         - "hostvars[inventory_hostname]['prometheus'] is defined"
-        - "hostvars[inventory_hostname]['prometheus'] != ''"
+        - "hostvars[inventory_hostname]['prometheus'] not in ['', [], None]"
         - "hostvars[inventory_hostname]['prometheus'] |
            community.general.json_query(vars['prometheus_install_package'])
            is defined"
@@ -34,7 +34,7 @@
         file: "packages.yml"
       when:
         - "hostvars[inventory_hostname]['prometheus'] is defined"
-        - "hostvars[inventory_hostname]['prometheus'] != ''"
+        - "hostvars[inventory_hostname]['prometheus'] not in ['', [], None]"
         - "hostvars[inventory_hostname]['prometheus'] |
            community.general.json_query(vars['alertmanager_install_package']) is
            defined"
@@ -46,12 +46,12 @@
           "[].install_package[] | map(&alertmanager || 'false', @) | [0]"
 - name: "prometheus | Include Prometheus deployment tasks"
   ansible.builtin.import_tasks:
-    file: "deploy_prometheus.yml"
+    file: "deploy.d/prometheus.yml"
 - name: "prometheus | Flush handlers"
   ansible.builtin.meta: "flush_handlers"
 - name: "prometheus | Include Alertmanager deployment tasks"
   ansible.builtin.import_tasks:
-    file: "deploy_alertmanager.yml"
+    file: "deploy.d/alertmanager.yml"
 - name: "prometheus | Include amtool deployment tasks"
   ansible.builtin.import_tasks:
-    file: "deploy_amtool.yml"
+    file: "deploy.d/amtool.yml"

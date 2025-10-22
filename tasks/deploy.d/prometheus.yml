@@ -14,9 +14,7 @@
       {{ ' %s' }}"
   when:
     - "vars['prometheus_rules_settings'] is defined"
-    - "vars['prometheus_rules_settings'] != []"
-    - "vars['prometheus_rules_settings'] != ''"
-    - "vars['prometheus_rules_settings'] != None"
+    - "vars['prometheus_rules_settings'] not in ['', [], None]"
   notify:
     - "Reload Prometheus"
 - name: "prometheus | Deploy Prometheus YAML configuration"
@@ -34,9 +32,7 @@
       {{ ' %s' }}"
   when:
     - "vars['prometheus_instance_settings'] is defined"
-    - "vars['prometheus_instance_settings'] != []"
-    - "vars['prometheus_instance_settings'] != ''"
-    - "vars['prometheus_instance_settings'] != None"
+    - "vars['prometheus_instance_settings'] not in ['', [], None]"
   notify:
     - "Reload Prometheus"
 - name: "prometheus | Deploy Prometheus service configuration"
@@ -47,6 +43,7 @@
     owner: "root"
     group: "root"
     mode: "0644"
+  register: "prometheus_service_settings_result"
   notify:
     - "Restart Prometheus"
 - name: "prometheus | Ensure Prometheus service is started"

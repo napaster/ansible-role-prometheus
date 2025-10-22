@@ -9,9 +9,7 @@
     mode: "0644"
   when:
     - "vars['alertmanager_instance_templates'] is defined"
-    - "vars['alertmanager_instance_templates'] != []"
-    - "vars['alertmanager_instance_templates'] != ''"
-    - "vars['alertmanager_instance_templates'] != None"
+    - "vars['alertmanager_instance_templates'] not in ['', [], None]"
   notify:
     - "Reload Alertmanager"
 - name: "prometheus | Deploy Alertmanager Gossip TLS settings"
@@ -24,9 +22,7 @@
     mode: "0644"
   when:
     - "vars['alertmanager_instance_gossip'] is defined"
-    - "vars['alertmanager_instance_gossip'] != []"
-    - "vars['alertmanager_instance_gossip'] != ''"
-    - "vars['alertmanager_instance_gossip'] != None"
+    - "vars['alertmanager_instance_gossip'] not in ['', [], None]"
   notify:
     - "Reload Alertmanager"
 - name: "prometheus | Deploy Alertmanager YAML configuration"
@@ -40,9 +36,7 @@
     validate: "amtool check-config %s"
   when:
     - "vars['alertmanager_instance_settings'] is defined"
-    - "vars['alertmanager_instance_settings'] != []"
-    - "vars['alertmanager_instance_settings'] != ''"
-    - "vars['alertmanager_instance_settings'] != None"
+    - "vars['alertmanager_instance_settings'] not in ['', [], None]"
   notify:
     - "Reload Alertmanager"
 - name: "prometheus | Deploy Alertmanager service configuration"
@@ -53,6 +47,7 @@
     owner: "root"
     group: "root"
     mode: "0644"
+  register: "alertmanager_service_settings_result"
   notify:
     - "Restart Alertmanager"
 - name: "prometheus | Ensure Alertmanager service is started"
