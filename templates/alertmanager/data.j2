@@ -1,7 +1,8 @@
-{% if od['retention'] is defined and od['retention'] != '' %}
+{% if od['retention'] is defined and od['retention']
+  not in ['', [], '[]', None] %}
 {{ ' --data.retention=\'' + od['retention'] + '\'' -}}
 {% endif %}
 {% if od['maintenance_interval'] is defined and
-  od['maintenance_interval'] != '' %}
+  od['maintenance_interval'] not in ['', [], '[]', None] %}
 {{ ' --data.maintenance-interval=\'' + od['maintenance_interval'] + '\'' -}}
 {% endif %}

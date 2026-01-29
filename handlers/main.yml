@@ -5,15 +5,17 @@
     state: "reloaded"
   listen: "Reload Prometheus"
   when:
-    - "vars['prometheus_service_settings_result'] is not defined or (
-      vars['prometheus_service_settings_result'] is defined and
-      vars['prometheus_service_settings_result'] is not changed)"
+    - "lookup('ansible.builtin.vars', 'prometheus_service_settings_result')
+      is not defined or (lookup('ansible.builtin.vars',
+      'prometheus_service_settings_result') is defined and
+      lookup('ansible.builtin.vars',
+      'prometheus_service_settings_result') is not changed)"
     - "hostvars[inventory_hostname]['prometheus'] is defined"
-    - "hostvars[inventory_hostname]['prometheus'] not in ['', [], None]"
+    - "hostvars[inventory_hostname]['prometheus']
+      not in ['', [], '[]', None]"
     - "hostvars[inventory_hostname]['prometheus'] |
-      community.general.json_query(vars['prometheus_reload']) is defined"
-    - "hostvars[inventory_hostname]['prometheus'] |
-      community.general.json_query(vars['prometheus_reload']) == 'true'"
+      community.general.json_query(lookup('ansible.builtin.vars',
+      'prometheus_reload', default='')) == 'true'"
   vars:
     prometheus_reload: "[].reload[] | map(&prometheus || 'false', @) | [0]"
 - name: "prometheus | Restart Prometheus service"
@@ -24,11 +26,11 @@
   listen: "Restart Prometheus"
   when:
     - "hostvars[inventory_hostname]['prometheus'] is defined"
-    - "hostvars[inventory_hostname]['prometheus'] not in ['', [], None]"
+    - "hostvars[inventory_hostname]['prometheus']
+      not in ['', [], '[]', None]"
     - "hostvars[inventory_hostname]['prometheus'] |
-      community.general.json_query(vars['prometheus_restart']) is defined"
-    - "hostvars[inventory_hostname]['prometheus'] |
-      community.general.json_query(vars['prometheus_restart']) == 'true'"
+      community.general.json_query(lookup('ansible.builtin.vars',
+      'prometheus_restart', default='')) == 'true'"
   vars:
     prometheus_restart: "[].restart[] | map(&prometheus || 'false', @) | [0]"
 - name: "prometheus | Reload Alertmanager service"
@@ -37,15 +39,17 @@
     state: "reloaded"
   listen: "Reload Alertmanager"
   when:
-    - "vars['alertmanager_service_settings_result'] is not defined or (
-      vars['alertmanager_service_settings_result'] is defined and
-      vars['alertmanager_service_settings_result'] is not changed)"
-    - "hostvars[inventory_hostname]['prometheus'] is defined"
-    - "hostvars[inventory_hostname]['prometheus'] not in ['', [], None]"
-    - "hostvars[inventory_hostname]['prometheus'] |
-      community.general.json_query(vars['alertmanager_reload']) is defined"
-    - "hostvars[inventory_hostname]['prometheus'] |
-      community.general.json_query(vars['alertmanager_reload']) == 'true'"
+    - "lookup('ansible.builtin.vars', 'alertmanager_service_settings_result')
+      is not defined or (lookup('ansible.builtin.vars',
+      'alertmanager_service_settings_result') is defined and
+      lookup('ansible.builtin.vars',
+      'alertmanager_service_settings_result') is not changed)"
+    - "hostvars[inventory_hostname]['alertmanager'] is defined"
+    - "hostvars[inventory_hostname]['alertmanager']
+      not in ['', [], '[]', None]"
+    - "hostvars[inventory_hostname]['alertmanager'] |
+      community.general.json_query(lookup('ansible.builtin.vars',
+      'alertmanager_reload', default='')) == 'true'"
   vars:
     alertmanager_reload: "[].reload[] | map(&alertmanager || 'false', @) | [0]"
 - name: "prometheus | Restart Alertmanager service"
@@ -55,12 +59,12 @@
     state: "restarted"
   listen: "Restart Alertmanager"
   when:
-    - "hostvars[inventory_hostname]['prometheus'] is defined"
-    - "hostvars[inventory_hostname]['prometheus'] not in ['', [], None]"
-    - "hostvars[inventory_hostname]['prometheus'] |
-      community.general.json_query(vars['alertmanager_restart']) is defined"
-    - "hostvars[inventory_hostname]['prometheus'] |
-      community.general.json_query(vars['alertmanager_restart']) == 'true'"
+    - "hostvars[inventory_hostname]['alertmanager'] is defined"
+    - "hostvars[inventory_hostname]['alertmanager']
+      not in ['', [], '[]', None]"
+    - "hostvars[inventory_hostname]['alertmanager'] |
+      community.general.json_query(lookup('ansible.builtin.vars',
+      'alertmanager_restart', default='')) == 'true'"
   vars:
     alertmanager_restart:
       "[].restart[] | map(&alertmanager || 'false', @) | [0]"

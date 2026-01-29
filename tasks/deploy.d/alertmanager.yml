@@ -1,42 +1,43 @@
 ---
 - name: "prometheus | Deploy Alertmanager templates"
   ansible.builtin.copy:
-    content: "{{ vars['alertmanager_instance_templates'] }}"
-    dest: "{{ hostvars[inventory_hostname]['alertmanager_conf_dest'] + '/' +
-      'alertmanager.tmpl' }}"
+    content: "{{ lookup('ansible.builtin.vars',
+      'alertmanager_instance_templates') }}"
+    dest: "{{ hostvars[inventory_hostname]['alertmanager_conf_dest'] +
+      '/alertmanager.tmpl' }}"
     owner: "root"
     group: "root"
     mode: "0644"
   when:
-    - "vars['alertmanager_instance_templates'] is defined"
-    - "vars['alertmanager_instance_templates'] not in ['', [], None]"
+    - "lookup('ansible.builtin.vars', 'alertmanager_instance_templates',
+      default='') not in ['', [], '[]', None]"
   notify:
     - "Reload Alertmanager"
 - name: "prometheus | Deploy Alertmanager Gossip TLS settings"
   ansible.builtin.template:
     src: "gossip.yml.j2"
-    dest: "{{ hostvars[inventory_hostname]['alertmanager_conf_dest'] + '/' +
-      'gossip.yml' }}"
+    dest: "{{ hostvars[inventory_hostname]['alertmanager_conf_dest'] +
+      '/gossip.yml' }}"
     owner: "root"
     group: "root"
     mode: "0644"
   when:
-    - "vars['alertmanager_instance_gossip'] is defined"
-    - "vars['alertmanager_instance_gossip'] not in ['', [], None]"
+    - "lookup('ansible.builtin.vars', 'alertmanager_instance_gossip',
+      default='') not in ['', [], '[]', None]"
   notify:
     - "Reload Alertmanager"
 - name: "prometheus | Deploy Alertmanager YAML configuration"
   ansible.builtin.template:
     src: "alertmanager.yml.j2"
-    dest: "{{ hostvars[inventory_hostname]['alertmanager_conf_dest'] + '/' +
-      'alertmanager.yml' }}"
+    dest: "{{ hostvars[inventory_hostname]['alertmanager_conf_dest'] +
+      '/alertmanager.yml' }}"
     owner: "root"
     group: "root"
     mode: "0644"
     validate: "amtool check-config %s"
   when:
-    - "vars['alertmanager_instance_settings'] is defined"
-    - "vars['alertmanager_instance_settings'] not in ['', [], None]"
+    - "lookup('ansible.builtin.vars', 'alertmanager_instance_settings',
+      default='') not in ['', [], '[]', None]"
   notify:
     - "Reload Alertmanager"
 - name: "prometheus | Deploy Alertmanager service configuration"
@@ -55,10 +56,12 @@
     name: "{{ hostvars[inventory_hostname]['alertmanager_service'] }}"
     state: "started"
   when:
+    - "hostvars[inventory_hostname]['prometheus'] is defined"
+    - "hostvars[inventory_hostname]['prometheus']
+      not in ['', [], '[]', None]"
     - "hostvars[inventory_hostname]['prometheus'] |
-      community.general.json_query(vars['alertmanager_started']) is defined"
-    - "hostvars[inventory_hostname]['prometheus'] |
-      community.general.json_query(vars['alertmanager_started']) == 'true'"
+      community.general.json_query(lookup('ansible.builtin.vars',
+      'alertmanager_started', default='')) == 'true'"
   vars:
     alertmanager_started: "[].started[] |
       map(&alertmanager || 'false', @) | [0]"
@@ -67,9 +70,11 @@
     name: "{{ hostvars[inventory_hostname]['alertmanager_service'] }}"
     enabled: "yes"
   when:
+    - "hostvars[inventory_hostname]['prometheus'] is defined"
+    - "hostvars[inventory_hostname]['prometheus']
+      not in ['', [], '[]', None]"
     - "hostvars[inventory_hostname]['prometheus'] |
-      community.general.json_query(vars['alertmanager_enable']) is defined"
-    - "hostvars[inventory_hostname]['prometheus'] |
-      community.general.json_query(vars['alertmanager_enable']) == 'true'"
+      community.general.json_query(lookup('ansible.builtin.vars',
+      'alertmanager_enable', default='')) == 'true'"
   vars:
     alertmanager_enable: "[].enable[] | map(&alertmanager || 'false', @) | [0]"

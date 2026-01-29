@@ -1,15 +1,19 @@
-{% if ow['listen_address'] is defined and ow['listen_address'] != '' %}
+{% if ow['listen_address'] is defined and ow['listen_address']
+  not in ['', [], '[]', None] %}
 {{ ' --web.listen-address=\'' + ow['listen_address'] + '\'' -}}
 {% endif %}
-{% if ow['external_url'] is defined and ow['external_url'] != '' %}
+{% if ow['external_url'] is defined and ow['external_url']
+  not in ['', [], '[]', None] %}
 {{ ' --web.external-url=\'' + ow['external_url'] + '\'' -}}
 {% endif %}
-{% if ow['route_prefix'] is defined and ow['route_prefix'] != '' %}
+{% if ow['route_prefix'] is defined and ow['route_prefix']
+  not in ['', [], '[]', None] %}
 {{ ' --web.route-prefix=\'' + ow['route_prefix'] + '\'' -}}
 {% endif %}
-{% if ow['get_concurrency'] is defined and ow['get_concurrency'] != '' %}
+{% if ow['get_concurrency'] is defined and ow['get_concurrency']
+  not in ['', [], '[]', None] %}
 {{ ' --web.get-concurrency=\'' ~ ow['get_concurrency'] ~ '\'' -}}
 {% endif %}
-{% if ow['timeout'] is defined and ow['timeout'] != '' %}
+{% if ow['timeout'] is defined and ow['timeout'] not in ['', [], '[]', None] %}
 {{ ' --web.timeout=\'' ~ ow['timeout'] ~ '\'' -}}
 {% endif %}

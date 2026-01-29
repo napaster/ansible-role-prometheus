@@ -13,13 +13,11 @@
         file: "packages.yml"
       when:
         - "hostvars[inventory_hostname]['prometheus'] is defined"
-        - "hostvars[inventory_hostname]['prometheus'] not in ['', [], None]"
+        - "hostvars[inventory_hostname]['prometheus']
+          not in ['', [], '[]', None]"
         - "hostvars[inventory_hostname]['prometheus'] |
-           community.general.json_query(vars['prometheus_install_package'])
-           is defined"
-        - "hostvars[inventory_hostname]['prometheus'] |
-           community.general.json_query(vars['prometheus_install_package']) ==
-           'true'"
+          community.general.json_query(lookup('ansible.builtin.vars',
+          'prometheus_install_package', default='')) == 'true'"
       vars:
         prometheus_install_package:
           "[].install_package[] | map(&prometheus || 'false', @) | [0]"
@@ -34,13 +32,11 @@
         file: "packages.yml"
       when:
         - "hostvars[inventory_hostname]['prometheus'] is defined"
-        - "hostvars[inventory_hostname]['prometheus'] not in ['', [], None]"
+        - "hostvars[inventory_hostname]['prometheus']
+          not in ['', [], '[]', None]"
         - "hostvars[inventory_hostname]['prometheus'] |
-           community.general.json_query(vars['alertmanager_install_package']) is
-           defined"
-        - "hostvars[inventory_hostname]['prometheus'] |
-           community.general.json_query(vars['alertmanager_install_package']) ==
-           'true'"
+          community.general.json_query(lookup('ansible.builtin.vars',
+          'alertmanager_install_package', default='')) == 'true'"
       vars:
         alertmanager_install_package:
           "[].install_package[] | map(&alertmanager || 'false', @) | [0]"

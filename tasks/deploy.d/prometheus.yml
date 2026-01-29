@@ -2,37 +2,39 @@
 - name: "prometheus | Deploy Prometheus rules configuration"
   ansible.builtin.template:
     src: "prometheus_groups.j2"
-    dest: "{{ hostvars[inventory_hostname]['prometheus_conf_dest'] + '/' +
-      'prometheus_rules.yml' }}"
+    dest: "{{ hostvars[inventory_hostname]['prometheus_conf_dest'] +
+      '/prometheus_rules.yml' }}"
     owner: "root"
     group: "root"
     mode: "0644"
     validate: "{{ 'promtool check rules --lint-fatal' }}
-      {%- if vars['prometheus_lint'] is defined and vars['prometheus_lint']
-      in ['all', 'duplicate-rules', 'none'] -%}
-      {{ ' --lint=\"' + vars['prometheus_lint'] + '\"' }}{%- endif -%}
+      {%- if lookup('ansible.builtin.vars', 'prometheus_lint', default='') in
+      ['all', 'duplicate-rules', 'none'] -%}
+      {{ ' --lint=\"' + lookup('ansible.builtin.vars', 'prometheus_lint') +
+      '\"' }}{%- endif -%}
       {{ ' %s' }}"
   when:
-    - "vars['prometheus_rules_settings'] is defined"
-    - "vars['prometheus_rules_settings'] not in ['', [], None]"
+    - "lookup('ansible.builtin.vars', 'prometheus_rules_settings',
+      default='') not in ['', [], '[]', None]"
   notify:
     - "Reload Prometheus"
 - name: "prometheus | Deploy Prometheus YAML configuration"
   ansible.builtin.template:
     src: "prometheus.yml.j2"
-    dest: "{{ hostvars[inventory_hostname]['prometheus_conf_dest'] + '/' +
-      'prometheus.yml' }}"
+    dest: "{{ hostvars[inventory_hostname]['prometheus_conf_dest'] +
+      '/prometheus.yml' }}"
     owner: "root"
     group: "root"
     mode: "0644"
     validate: "{{ 'promtool check config --lint-fatal' }}
-      {%- if vars['prometheus_lint'] is defined and vars['prometheus_lint']
-      in ['all', 'duplicate-rules', 'none'] -%}
-      {{ ' --lint=\"' + vars['prometheus_lint'] + '\"' }}{%- endif -%}
+      {%- if lookup('ansible.builtin.vars', 'prometheus_lint', default='') in
+      ['all', 'duplicate-rules', 'none'] -%}
+      {{ ' --lint=\"' + lookup('ansible.builtin.vars', 'prometheus_lint') +
+      '\"' }}{%- endif -%}
       {{ ' %s' }}"
   when:
-    - "vars['prometheus_instance_settings'] is defined"
-    - "vars['prometheus_instance_settings'] not in ['', [], None]"
+    - "lookup('ansible.builtin.vars', 'prometheus_instance_settings',
+      default='') not in ['', [], '[]', None]"
   notify:
     - "Reload Prometheus"
 - name: "prometheus | Deploy Prometheus service configuration"
@@ -51,10 +53,12 @@
     name: "{{ hostvars[inventory_hostname]['prometheus_service'] }}"
     state: "started"
   when:
+    - "hostvars[inventory_hostname]['prometheus'] is defined"
+    - "hostvars[inventory_hostname]['prometheus']
+      not in ['', [], '[]', None]"
     - "hostvars[inventory_hostname]['prometheus'] |
-      community.general.json_query(vars['prometheus_started']) is defined"
-    - "hostvars[inventory_hostname]['prometheus'] |
-      community.general.json_query(vars['prometheus_started']) == 'true'"
+      community.general.json_query(lookup('ansible.builtin.vars',
+      'prometheus_started', default='')) == 'true'"
   vars:
     prometheus_started: "[].started[] | map(&prometheus || 'false', @) | [0]"
 - name: "prometheus | Enable Prometheus service"
@@ -62,9 +66,11 @@
     name: "{{ hostvars[inventory_hostname]['prometheus_service'] }}"
     enabled: "yes"
   when:
+    - "hostvars[inventory_hostname]['prometheus'] is defined"
+    - "hostvars[inventory_hostname]['prometheus']
+      not in ['', [], '[]', None]"
     - "hostvars[inventory_hostname]['prometheus'] |
-      community.general.json_query(vars['prometheus_enable']) is defined"
-    - "hostvars[inventory_hostname]['prometheus'] |
-      community.general.json_query(vars['prometheus_enable']) == 'true'"
+      community.general.json_query(lookup('ansible.builtin.vars',
+      'prometheus_enable', default='')) == 'true'"
   vars:
     prometheus_enable: "[].enable[] | map(&prometheus || 'false', @) | [0]"

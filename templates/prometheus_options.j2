@@ -2,33 +2,34 @@
 {{ '# ' + ansible_managed }}
 {{ '# Do not edit manually' }}
 
-{% if vars['prometheus_service_settings'] is defined and
-  vars['prometheus_service_settings'] != '' %}
-{% for o in vars['prometheus_service_settings'] %}
+{% if lookup('ansible.builtin.vars', 'prometheus_service_settings', default='')
+  not in ['', [], '[]', None] %}
+{% for o in lookup('ansible.builtin.vars', 'prometheus_service_settings') %}
 {% if loop['first'] %}
 {{ 'PROMETHEUS_ARGS=\"' -}}
 {% endif %}
-{% if o['web'] is defined and o['web'] != '' %}
+{% if o['web'] is defined and o['web'] not in ['', [], '[]', None] %}
 {% for ow in o['web'] %}
 {%- include 'prometheus/web.j2' -%}
 {% endfor %}
 {% endif %}
-{% if o['storage'] is defined and o['storage'] != '' %}
+{% if o['storage'] is defined and o['storage'] not in ['', [], '[]', None] %}
 {% for os in o['storage'] %}
 {%- include 'prometheus/storage.j2' -%}
 {% endfor %}
 {% endif %}
-{% if o['rules'] is defined and o['rules'] != '' %}
+{% if o['rules'] is defined and o['rules'] not in ['', [], '[]', None] %}
 {% for oru in o['rules'] %}
 {%- include 'prometheus/rules.j2' -%}
 {% endfor %}
 {% endif %}
-{% if o['query'] is defined and o['query'] != '' %}
+{% if o['query'] is defined and o['query'] not in ['', [], '[]', None] %}
 {% for oq in o['query'] %}
 {%- include 'prometheus/query.j2' -%}
 {% endfor %}
 {% endif %}
-{% if o['alertmanager'] is defined and o['alertmanager'] != '' %}
+{% if o['alertmanager'] is defined and o['alertmanager']
+  not in ['', [], '[]', None] %}
 {% for oam in o['alertmanager'] %}
 {%- include 'prometheus/alertmanager.j2' -%}
 {% endfor %}

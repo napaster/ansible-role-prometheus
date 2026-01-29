@@ -2,28 +2,28 @@
 {{ '# ' + ansible_managed }}
 {{ '# Do not edit manually' }}
 
-{% if vars['alertmanager_service_settings'] is defined and
-  vars['alertmanager_service_settings'] != '' %}
-{% for o in vars['alertmanager_service_settings'] %}
+{% if lookup('ansible.builtin.vars', 'alertmanager_service_settings',
+  default='') not in ['', [], '[]', None]  %}
+{% for o in lookup('ansible.builtin.vars', 'alertmanager_service_settings') %}
 {% if loop['first'] %}
 {{ 'ALERTMANAGER_ARGS=\"' -}}
 {% endif %}
-{% if o['web'] is defined and o['web'] != '' %}
+{% if o['web'] is defined and o['web'] not in ['', [], '[]', None] %}
 {% for ow in o['web'] %}
 {%- include 'alertmanager/web.j2' -%}
 {% endfor %}
 {% endif %}
-{% if o['data'] is defined and o['data'] != '' %}
+{% if o['data'] is defined and o['data'] not in ['', [], '[]', None] %}
 {% for od in o['data'] %}
 {%- include 'alertmanager/data.j2' -%}
 {% endfor %}
 {% endif %}
-{% if o['silences'] is defined and o['silences'] != '' %}
+{% if o['silences'] is defined and o['silences'] not in ['', [], '[]', None] %}
 {% for os in o['silences'] %}
 {%- include 'alertmanager/silences.j2' -%}
 {% endfor %}
 {% endif %}
-{% if o['cluster'] is defined and o['cluster'] != '' %}
+{% if o['cluster'] is defined and o['cluster'] not in ['', [], '[]', None] %}
 {% for oc in o['cluster'] %}
 {%- include 'alertmanager/cluster.j2' -%}
 {% endfor %}
@@ -31,11 +31,12 @@
   o['cluster'] == '') %}
 {{ ' --cluster.listen-address=\'\'' -}}
 {% endif %}
-{% if o['alerts_gc_interval'] is defined and o['alerts_gc_interval'] != '' %}
+{% if o['alerts_gc_interval'] is defined and o['alerts_gc_interval']
+  not in ['', [], '[]', None] %}
 {{ ' --alerts.gc-interval=\'' + o['alerts_gc_interval'] + '\'' -}}
 {% endif %}
 {% if o['log_level'] is defined and o['log_level'] in ['debug', 'info', 'warn',
-'error'] %}
+  'error'] %}
 {{ ' --log.level=\'' + o['log_level'] + '\'' -}}
 {% endif %}
 {% if o['log_format'] is defined and o['log_format'] in ['logfmt', 'json'] %}

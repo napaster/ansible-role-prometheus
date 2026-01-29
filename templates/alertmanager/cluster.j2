@@ -1,17 +1,20 @@
-{% if oc['tls_config'] is defined and oc['tls_config'] != '' %}
+{% if oc['tls_config'] is defined and oc['tls_config']
+  not in ['', [], '[]', None] %}
 {{ ' --cluster.tls-config=\'' + oc['tls_config'] + '\'' -}}
 {% endif %}
-{% if oc['listen_address'] is defined and oc['listen_address'] != '' %}
+{% if oc['listen_address'] is defined and oc['listen_address']
+  not in ['', [], '[]', None] %}
 {{ ' --cluster.listen-address=\'' + oc['listen_address'] + '\'' -}}
 {% elif oc['listen_address'] is defined and oc['listen_address'] in ['', ""] %}
 {{ ' --cluster.listen-address=\'\'' -}}
 {% elif oc['listen_address'] is not defined %}
 {{ ' --cluster.listen-address=\'\'' -}}
 {% endif %}
-{% if oc['advertise_address'] is defined and oc['advertise_address'] != '' %}
+{% if oc['advertise_address'] is defined and oc['advertise_address']
+  not in ['', [], '[]', None] %}
 {{ ' --cluster.advertise-address=\'' + oc['advertise_address'] + '\'' -}}
 {% endif %}
-{% if oc['peer'] is defined and oc['peer'] != '' %}
+{% if oc['peer'] is defined and oc['peer'] not in ['', [], '[]', None] %}
 {% if oc['peer'] is string %}
 {{ ' --cluster.peer=\'' + oc['peer'] + '\'' -}}
 {% elif oc['peer'] is sequence %}
@@ -20,33 +23,42 @@
 {% endfor %}
 {% endif %}
 {% endif %}
-{% if oc['peer_timeout'] is defined and oc['peer_timeout'] != '' %}
+{% if oc['peer_timeout'] is defined and oc['peer_timeout']
+  not in ['', [], '[]', None] %}
 {{ ' --cluster.peer-timeout=\'' + oc['peer_timeout'] + '\'' -}}
 {% endif %}
-{% if oc['gossip_interval'] is defined and oc['gossip_interval'] != '' %}
+{% if oc['gossip_interval'] is defined and oc['gossip_interval']
+  not in ['', [], '[]', None] %}
 {{ ' --cluster.gossip-interval=\'' + oc['gossip_interval'] + '\'' -}}
 {% endif %}
-{% if oc['pushpull_interval'] is defined and oc['pushpull_interval'] != '' %}
+{% if oc['pushpull_interval'] is defined and oc['pushpull_interval']
+  not in ['', [], '[]', None] %}
 {{ ' --cluster.pushpull-interval=\'' + oc['pushpull_interval'] + '\'' -}}
 {% endif %}
-{% if oc['tcp_timeout'] is defined and oc['tcp_timeout'] != '' %}
+{% if oc['tcp_timeout'] is defined and oc['tcp_timeout']
+  not in ['', [], '[]', None] %}
 {{ ' --cluster.tcp.timeout=\'' + oc['tcp_timeout'] + '\'' -}}
 {% endif %}
-{% if oc['probe_timeout'] is defined and oc['probe_timeout'] != '' %}
+{% if oc['probe_timeout'] is defined and oc['probe_timeout']
+  not in ['', [], '[]', None] %}
 {{ ' --cluster.probe-timeout=\'' + oc['probe_timeout'] + '\'' -}}
 {% endif %}
-{% if oc['probe_interval'] is defined and oc['probe_interval'] != '' %}
+{% if oc['probe_interval'] is defined and oc['probe_interval']
+  not in ['', [], '[]', None] %}
 {{ ' --cluster.probe-interval=\'' + oc['probe_interval'] + '\'' -}}
 {% endif %}
-{% if oc['settle_timeout'] is defined and oc['settle_timeout'] != '' %}
+{% if oc['settle_timeout'] is defined and oc['settle_timeout']
+  not in ['', [], '[]', None] %}
 {{ ' --cluster.settle-timeout=\'' + oc['settle_timeout'] + '\'' -}}
 {% endif %}
-{% if oc['reconnect_interval'] is defined and oc['reconnect_interval'] != '' %}
+{% if oc['reconnect_interval'] is defined and oc['reconnect_interval']
+  not in ['', [], '[]', None] %}
 {{ ' --cluster.reconnect-interval=\'' + oc['reconnect_interval'] + '\'' -}}
 {% endif %}
-{% if oc['reconnect_timeout'] is defined and oc['reconnect_timeout'] != '' %}
+{% if oc['reconnect_timeout'] is defined and oc['reconnect_timeout']
+  not in ['', [], '[]', None] %}
 {{ ' --cluster.reconnect-timeout=\'' + oc['reconnect_timeout'] + '\'' -}}
 {% endif %}
-{% if oc['label'] is defined and oc['label'] != '' %}
+{% if oc['label'] is defined and oc['label'] not in ['', [], '[]', None] %}
 {{ ' --cluster.label=\'' + oc['label'] + '\'' -}}
 {% endif %}

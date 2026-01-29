@@ -1,18 +1,18 @@
 {% if oru['alert_for_outage_tolerance'] is defined and
-  oru['alert_for_outage_tolerance'] != '' %}
+  oru['alert_for_outage_tolerance'] not in ['', [], '[]', None] %}
 {{ ' --rules.alert.for-outage-tolerance=\'' +
   oru['alert_for_outage_tolerance'] + '\'' -}}
 {% endif %}
 {% if oru['alert_for_grace_period'] is defined and
-  oru['alert_for_grace_period'] != '' %}
+  oru['alert_for_grace_period'] not in ['', [], '[]', None] %}
 {{ ' --rules.alert.for-grace-period=\'' +
   oru['alert_for_grace_period'] + '\'' -}}
 {% endif %}
 {% if oru['alert_resend_delay'] is defined and
-  oru['alert_resend_delay'] != '' %}
+  oru['alert_resend_delay'] not in ['', [], '[]', None] %}
 {{ ' --rules.alert.resend-delay=\'' + oru['alert_resend_delay'] + '\'' -}}
 {% endif %}
 {% if oru['max_concurrent_evals'] is defined and
-  oru['max_concurrent_evals'] != '' %}
+  oru['max_concurrent_evals'] not in ['', [], '[]', None] %}
 {{ ' --rules.max-concurrent-evals=\'' ~ oru['max_concurrent_evals'] ~ '\'' -}}
 {% endif %}

@@ -1,9 +1,9 @@
 {% if os['tsdb_retention_time'] is defined and
-  os['tsdb_retention_time'] != '' %}
+  os['tsdb_retention_time'] not in ['', [], '[]', None] %}
 {{ ' --storage.tsdb.retention.time=\'' ~ os['tsdb_retention_time'] ~ '\'' -}}
 {% endif %}
 {% if os['tsdb_retention_size'] is defined and
-  os['tsdb_retention_size'] != '' %}
+  os['tsdb_retention_size'] not in ['', [], '[]', None] %}
 {{ ' --storage.tsdb.retention.size=\'' ~ os['tsdb_retention_size'] ~ '\'' -}}
 {% endif %}
 {% if os['tsdb_no_lockfile'] is defined and os['tsdb_no_lockfile'] == 'true' %}
@@ -18,22 +18,22 @@
 {{ ' --storage.tsdb.wal-compression' -}}
 {% endif %}
 {% if os['remote_flush_deadline'] is defined and
-  os['remote_flush_deadline'] != '' %}
+  os['remote_flush_deadline'] not in ['', [], '[]', None] %}
 {{ ' --storage.remote.flush-deadline=\'' +
   os['remote_flush_deadline'] + '\'' -}}
 {% endif %}
 {% if os['remote_read_sample_limit'] is defined and
-  os['remote_read_sample_limit'] != '' %}
+  os['remote_read_sample_limit'] not in ['', [], '[]', None] %}
 {{ ' --storage.remote.read-sample-limit=\'' ~
   os['remote_read_sample_limit'] ~ '\'' -}}
 {% endif %}
 {% if os['remote_read_concurrent_limit'] is defined and
-  os['remote_read_concurrent_limit'] != '' %}
+  os['remote_read_concurrent_limit'] not in ['', [], '[]', None] %}
 {{ ' --storage.remote.read-concurrent-limit=\'' ~
   os['remote_read_concurrent_limit'] ~ '\'' -}}
 {% endif %}
 {% if os['remote_read_max_bytes_in_frame'] is defined and
-  os['remote_read_max_bytes_in_frame'] != '' %}
+  os['remote_read_max_bytes_in_frame'] not in ['', [], '[]', None] %}
 {{ ' --storage.remote.read-max-bytes-in-frame=\'' ~
   os['remote_read_max_bytes_in_frame'] ~ '\'' -}}
 {% endif %}

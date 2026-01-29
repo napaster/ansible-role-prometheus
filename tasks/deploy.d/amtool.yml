@@ -2,11 +2,11 @@
 - name: "prometheus | Deploy amtool configuration"
   ansible.builtin.template:
     src: "amtool.yml.j2"
-    dest: "{{ hostvars[inventory_hostname]['amtool_conf_dest'] + '/' +
-      'config.yml' }}"
+    dest: "{{ hostvars[inventory_hostname]['amtool_conf_dest'] +
+      '/config.yml' }}"
     owner: "root"
     group: "root"
     mode: "0644"
   when:
-    - "vars['amtool_instance_settings'] is defined"
-    - "vars['amtool_instance_settings'] not in ['', [], None]"
+    - "lookup('ansible.builtin.vars', 'amtool_instance_settings',
+      default='') not in ['', [], '[]', None]"

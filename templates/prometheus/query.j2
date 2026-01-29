@@ -1,12 +1,15 @@
-{% if oq['lookback_delta'] is defined and oq['lookback_delta'] != '' %}
+{% if oq['lookback_delta'] is defined and oq['lookback_delta']
+  not in ['', [], '[]', None] %}
 {{ ' --query.lookback-delta=\'' + oq['lookback_delta'] + '\'' -}}
 {% endif %}
-{% if oq['timeout'] is defined and oq['timeout'] != '' %}
+{% if oq['timeout'] is defined and oq['timeout'] not in ['', [], '[]', None] %}
 {{ ' --query.timeout=\'' + oq['timeout'] + '\'' -}}
 {% endif %}
-{% if oq['max_concurrency'] is defined and oq['max_concurrency'] != '' %}
+{% if oq['max_concurrency'] is defined and oq['max_concurrency']
+  not in ['', [], '[]', None] %}
 {{ ' --query.max-concurrency=\'' ~ oq['max_concurrency'] ~ '\'' -}}
 {% endif %}
-{% if oq['max_samples'] is defined and oq['max_samples'] != '' %}
+{% if oq['max_samples'] is defined and oq['max_samples']
+  not in ['', [], '[]', None] %}
 {{ ' --query.max-samples=\'' ~ oq['max_samples'] ~ '\'' -}}
 {% endif %}

@@ -2,10 +2,10 @@
 {{ '# ' + ansible_managed }}
 {{ '# Do not edit manually' }}
 
-{{ prometheus_instance_settings | ansible.builtin.to_nice_yaml() }}
-{% if vars['prometheus_rules_settings'] is defined and
-  vars['prometheus_rules_settings'] != '' %}
-{{ 'rule_files:\n  - ' +
-  hostvars[inventory_hostname]['prometheus_conf_dest'] + '/' +
-  'prometheus_rules.yml' }}
+{{ lookup('ansible.builtin.vars', 'prometheus_instance_settings') |
+  ansible.builtin.to_nice_yaml() }}
+{% if lookup('ansible.builtin.vars', 'prometheus_rules_settings',
+  default='') not in ['', [], '[]', None] %}
+{{ 'rule_files:\n  - ' + hostvars[inventory_hostname]['prometheus_conf_dest'] +
+  '/prometheus_rules.yml' }}
 {% endif %}

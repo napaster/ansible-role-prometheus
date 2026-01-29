@@ -1,13 +1,22 @@
 ---
+- name: "prometheus | Assert that ansible facts gathered successfully"
+  ansible.builtin.assert:
+    that:
+      - "hostvars[inventory_hostname]['ansible_facts']['service_mgr'] is
+        defined"
+    fail_msg: "'ansible_facts' not found. Please enable facts gathering"
+    quiet: "true"
 - name: "prometheus | Assert that system manager is systemd"
   ansible.builtin.assert:
     that:
-      - "hostvars[inventory_hostname]['ansible_service_mgr'] == 'systemd'"
+      - "hostvars[inventory_hostname]['ansible_facts']['service_mgr'] ==
+        'systemd'"
     fail_msg: "System manager is not systemd"
     quiet: "true"
 - name: "prometheus | Add the OS specific variables"
   ansible.builtin.include_vars:
-    file: "{{ hostvars[inventory_hostname]['ansible_os_family'] + '.yml' }}"
+    file: "{{ hostvars[inventory_hostname]['ansible_facts']['os_family'] +
+      '.yml' }}"
 - name: "prometheus | Set facts about prometheus role"
   ansible.builtin.set_fact:
     prometheus_service_settings:
@@ -37,24 +46,28 @@
       community.general.json_query('[].alertmanager_templates[] | [0]') }}"
     amtool_instance_settings: "{{ hostvars[inventory_hostname]['prometheus'] |
       community.general.json_query('[].amtool_settings[] | [0]') }}"
-- name: "prometheus | Assert that package state in valid value"
+  when:
+    - "hostvars[inventory_hostname]['prometheus'] is defined"
+    - "hostvars[inventory_hostname]['prometheus'] not in ['', [], '[]', None]"
+- name: "prometheus | Assert that prometheus package state in valid value"
   ansible.builtin.assert:
     that:
-      - "vars['prometheus_package_state'] in ['present', 'latest']"
-    fail_msg: "'package_state' must be in 'present' or 'latest'"
+      - "lookup('ansible.builtin.vars', 'prometheus_package_state') in
+        ['present', 'latest']"
+    fail_msg: "{{ 'package_state must be in `present` or `latest`,
+      current is: ' + lookup('ansible.builtin.vars',
+      'prometheus_package_state') }}"
     quiet: "true"
   when:
-    - "vars['prometheus_package_state'] is defined"
-    - "vars['prometheus_package_state'] != []"
-    - "vars['prometheus_package_state'] != ''"
-    - "vars['prometheus_package_state'] != None"
+    - "lookup('ansible.builtin.vars', 'prometheus_package_state',
+      default='') not in ['', [], '[]', None, 'present', 'latest']"
 - name: "prometheus | Set package state to 'present' cause value is not defined"
   ansible.builtin.set_fact:
     prometheus_package_state: "present"
   when:
-    - "vars['prometheus_package_state'] is defined"
-    - "(vars['prometheus_package_state'] == '' or
-      vars['prometheus_package_state'] == None)"
+    - "lookup('ansible.builtin.vars', 'prometheus_package_state',
+      default='') in ['', [], '[]', None]"
+
 - name: "prometheus | Create Prometheus directory"
   ansible.builtin.file:
     path: "{{ hostvars[inventory_hostname]['prometheus_conf_dest'] }}"
@@ -63,8 +76,8 @@
     group: "root"
     mode: "0755"
   when:
-    - "vars['prometheus_instance_settings'] is defined"
-    - "vars['prometheus_instance_settings'] != ''"
+    - "lookup('ansible.builtin.vars', 'prometheus_instance_settings',
+      default='') not in ['', [], '[]', None]"
 - name: "prometheus | Create Alertmanager directory"
   ansible.builtin.file:
     path: "{{ hostvars[inventory_hostname]['alertmanager_conf_dest'] }}"
@@ -73,8 +86,8 @@
     group: "root"
     mode: "0755"
   when:
-    - "vars['alertmanager_instance_settings'] is defined"
-    - "vars['alertmanager_instance_settings'] != ''"
+    - "lookup('ansible.builtin.vars', 'alertmanager_instance_settings',
+      default='') not in ['', [], '[]', None]"
 - name: "prometheus | Create amtool directory"
   ansible.builtin.file:
     path: "{{ hostvars[inventory_hostname]['amtool_conf_dest'] }}"
@@ -83,5 +96,5 @@
     group: "root"
     mode: "0755"
   when:
-    - "vars['amtool_instance_settings'] is defined"
-    - "vars['amtool_instance_settings'] != ''"
+    - "lookup('ansible.builtin.vars', 'amtool_instance_settings',
+      default='') not in ['', [], '[]', None]"
