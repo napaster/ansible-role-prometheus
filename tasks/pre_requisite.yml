@@ -67,8 +67,14 @@
   when:
     - "lookup('ansible.builtin.vars', 'prometheus_package_state',
       default='') in ['', [], '[]', None]"
-
-- name: "prometheus | Create Prometheus directory"
+- name: "prometheus | Create Prometheus service directory"
+  ansible.builtin.file:
+    path: "{{ hostvars[inventory_hostname]['prometheus_options_dest'] }}"
+    state: "directory"
+    owner: "root"
+    group: "root"
+    mode: "0755"
+- name: "prometheus | Create Prometheus config directory"
   ansible.builtin.file:
     path: "{{ hostvars[inventory_hostname]['prometheus_conf_dest'] }}"
     state: "directory"
@@ -78,7 +84,7 @@
   when:
     - "lookup('ansible.builtin.vars', 'prometheus_instance_settings',
       default='') not in ['', [], '[]', None]"
-- name: "prometheus | Create Alertmanager directory"
+- name: "prometheus | Create Alertmanager config directory"
   ansible.builtin.file:
     path: "{{ hostvars[inventory_hostname]['alertmanager_conf_dest'] }}"
     state: "directory"
