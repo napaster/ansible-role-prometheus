@@ -30,6 +30,12 @@
     prometheus_rules_settings:
       "{{ hostvars[inventory_hostname]['prometheus'] |
       community.general.json_query('[].prometheus_rules[] | [0]') }}"
+    prometheus_web_settings:
+      "{{ hostvars[inventory_hostname]['prometheus'] |
+      community.general.json_query('[].prometheus_web_settings[] | [0]') }}"
+    prometheus_secret_files:
+      "{{ hostvars[inventory_hostname]['prometheus'] |
+      community.general.json_query('[].secret_files[]') }}"
     prometheus_package_state: "{{ hostvars[inventory_hostname]['prometheus'] |
       community.general.json_query('[].package_state | [0]') }}"
     alertmanager_service_settings:
@@ -83,6 +89,16 @@
     mode: "0755"
   when:
     - "lookup('ansible.builtin.vars', 'prometheus_instance_settings',
+      default='') not in ['', [], '[]', None]"
+- name: "prometheus | Create Prometheus config directory for web settings"
+  ansible.builtin.file:
+    path: "{{ hostvars[inventory_hostname]['prometheus_conf_dest'] }}"
+    state: "directory"
+    owner: "root"
+    group: "root"
+    mode: "0755"
+  when:
+    - "lookup('ansible.builtin.vars', 'prometheus_web_settings',
       default='') not in ['', [], '[]', None]"
 - name: "prometheus | Create Alertmanager config directory"
   ansible.builtin.file:

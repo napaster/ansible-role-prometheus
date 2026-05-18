@@ -44,10 +44,10 @@
       'alertmanager_service_settings_result') is defined and
       lookup('ansible.builtin.vars',
       'alertmanager_service_settings_result') is not changed)"
-    - "hostvars[inventory_hostname]['alertmanager'] is defined"
-    - "hostvars[inventory_hostname]['alertmanager']
+    - "hostvars[inventory_hostname]['prometheus'] is defined"
+    - "hostvars[inventory_hostname]['prometheus']
       not in ['', [], '[]', None]"
-    - "hostvars[inventory_hostname]['alertmanager'] |
+    - "hostvars[inventory_hostname]['prometheus'] |
       community.general.json_query(lookup('ansible.builtin.vars',
       'alertmanager_reload', default='')) == 'true'"
   vars:
@@ -59,10 +59,10 @@
     state: "restarted"
   listen: "Restart Alertmanager"
   when:
-    - "hostvars[inventory_hostname]['alertmanager'] is defined"
-    - "hostvars[inventory_hostname]['alertmanager']
+    - "hostvars[inventory_hostname]['prometheus'] is defined"
+    - "hostvars[inventory_hostname]['prometheus']
       not in ['', [], '[]', None]"
-    - "hostvars[inventory_hostname]['alertmanager'] |
+    - "hostvars[inventory_hostname]['prometheus'] |
       community.general.json_query(lookup('ansible.builtin.vars',
       'alertmanager_restart', default='')) == 'true'"
   vars:

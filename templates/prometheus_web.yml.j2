@@ -1,0 +1,6 @@
+{{ '## web.yml' }}
+{{ '# ' + ansible_managed }}
+{{ '# Do not edit manually' }}
+
+{{ lookup('ansible.builtin.vars', 'prometheus_web_settings') |
+  ansible.builtin.to_nice_yaml() }}

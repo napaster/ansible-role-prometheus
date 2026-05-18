@@ -1,4 +1,32 @@
 ---
+- name: "prometheus | Deploy secret files"
+  ansible.builtin.copy:
+    content: "{{ item['content'] }}"
+    dest: "{{ item['path'] }}"
+    owner: "{{ item['owner'] | default('root') }}"
+    group: "{{ item['group'] | default('root') }}"
+    mode: "{{ item['mode'] | default('0640') }}"
+  loop: "{{ lookup('ansible.builtin.vars', 'prometheus_secret_files',
+    default=[]) }}"
+  no_log: true
+  when:
+    - "lookup('ansible.builtin.vars', 'prometheus_secret_files',
+      default='') not in ['', [], '[]', None]"
+  notify:
+    - "Reload Prometheus"
+- name: "prometheus | Deploy Prometheus web configuration"
+  ansible.builtin.template:
+    src: "prometheus_web.yml.j2"
+    dest: "{{ hostvars[inventory_hostname]['prometheus_conf_dest'] +
+      '/web.yml' }}"
+    owner: "root"
+    group: "root"
+    mode: "0640"
+  when:
+    - "lookup('ansible.builtin.vars', 'prometheus_web_settings',
+      default='') not in ['', [], '[]', None]"
+  notify:
+    - "Restart Prometheus"
 - name: "prometheus | Deploy Prometheus rules configuration"
   ansible.builtin.template:
     src: "prometheus_groups.j2"

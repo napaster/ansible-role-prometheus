@@ -1,320 +1,360 @@
 # ansible-prometheus
 
-Deploy [Prometheus](//prometheus.io/) - monitoring system and time series
-database and Alertmanager
+Deploy package-based [Prometheus](https://prometheus.io/) and optional
+Alertmanager.
+
+In this infrastructure the role is used in three modes:
+
+* central receiver/storage: accepts remote write from site collectors;
+* edge collector on a router: scrapes local/NAT-side targets and sends samples
+  to the central receiver via `remote_write`;
+* local collector on an internal server: scrapes localhost or nearby targets
+  and sends samples to the router collector.
+
+The role does not download Prometheus binaries. It installs OS packages through
+the local package manager. This matches Archlinux and Debian deployments where
+the `prometheus` package is available.
 
 ## Requirements
 
-* Ansible 3.0.0+;
+* Ansible 3.0.0+
+* systemd
+* `community.general` collection
+* `promtool` and `amtool` from OS packages for configuration validation
 
-## Extra
+## Security model
 
-Configuration pass as-is from yaml to pretty yaml with validation via
-`promtool` for Prometheus and `amtool` for Alertmanager
+Inside a private NAT network, scrape endpoints may be plain HTTP if the network
+is trusted enough.
 
+Across WAN or any untrusted boundary, remote write must be protected:
 
-## Example configuration
+* use HTTPS in front of the central receiver;
+* require authentication on the central endpoint;
+* store collector passwords in files deployed with Ansible Vault;
+* reference secrets from Prometheus config with `password_file` or
+  `credentials_file`, not inline plaintext.
+
+Prometheus supports remote write authentication in the `remote_write` section
+through `basic_auth`, `authorization`, OAuth2 and TLS settings. Prometheus 3.x
+enables receiving remote write via the `--web.enable-remote-write-receiver`
+command-line flag.
+
+## Variables
+
+The role is configured by the `prometheus` list variable. It is inactive when
+`prometheus` is empty.
+
+```yaml
+prometheus: []
+```
+
+OS-specific defaults:
+
+```yaml
+prometheus_options_dest: '/etc/conf.d'
+prometheus_service: 'prometheus'
+prometheus_conf_dest: '/etc/prometheus'
+prometheus_package: 'prometheus'
+prometheus_bin: '/usr/bin/prometheus'
+alertmanager_service: 'alertmanager'
+alertmanager_conf_dest: '/etc/alertmanager'
+alertmanager_package: 'alertmanager'
+alertmanager_bin: '/usr/bin/alertmanager'
+amtool_conf_dest: '/etc/amtool'
+```
+
+### Common keys
+
+```yaml
+prometheus:
+  - enable:
+      - prometheus: 'true'
+        alertmanager: 'false'
+    started:
+      - prometheus: 'true'
+        alertmanager: 'false'
+    restart:
+      - prometheus: 'true'
+        alertmanager: 'false'
+    reload:
+      - prometheus: 'true'
+        alertmanager: 'false'
+    install_package:
+      - prometheus: 'true'
+        alertmanager: 'false'
+    package_state: 'present'
+    lint: 'all'
+    secret_files: []
+    prometheus_options: []
+    prometheus_web_settings: {}
+    prometheus_settings: {}
+    prometheus_rules: {}
+```
+
+* `enable`: enable systemd services.
+* `started`: start systemd services.
+* `restart`: restart services when service options or web config change.
+* `reload`: reload Prometheus when scrape/rule/secret files change and service
+  options did not change.
+* `install_package`: install `prometheus` and optionally `alertmanager`.
+* `package_state`: `present` or `latest`.
+* `lint`: `promtool` lint mode: `all`, `duplicate-rules` or `none`.
+* `secret_files`: vault-backed files for passwords/tokens.
+* `prometheus_options`: command-line flags rendered to the OS service options
+  file.
+* `prometheus_web_settings`: content of `/etc/prometheus/web.yml`.
+* `prometheus_settings`: content of `/etc/prometheus/prometheus.yml`.
+* `prometheus_rules`: content of `/etc/prometheus/prometheus_rules.yml`.
+
+### Secret files
+
+```yaml
+secret_files:
+  - path: '/etc/prometheus/remote_write.password'
+    content: !vault |
+      $ANSIBLE_VAULT;1.1;AES256
+      ...
+    owner: 'root'
+    group: 'root'
+    mode: '0640'
+```
+
+The task uses `no_log: true`.
+
+## Central receiver example
+
+This host receives data from edge collectors. Put HTTPS and public access
+control in a reverse proxy when possible. Prometheus web config can still hold
+basic auth users for the receiver/UI.
+
+Passwords in `basic_auth_users` must be bcrypt hashes.
+
+```yaml
+prometheus:
+  - enable:
+      - prometheus: 'true'
+        alertmanager: 'true'
+    started:
+      - prometheus: 'true'
+        alertmanager: 'true'
+    restart:
+      - prometheus: 'true'
+        alertmanager: 'true'
+    reload:
+      - prometheus: 'true'
+        alertmanager: 'true'
+    install_package:
+      - prometheus: 'true'
+        alertmanager: 'true'
+    package_state: 'present'
+    lint: 'all'
+    prometheus_options:
+      - web:
+          - listen_address: '127.0.0.1:9090'
+            config_file: '/etc/prometheus/web.yml'
+            enable_remote_write_receiver: 'true'
+        storage:
+          - tsdb_retention_time: '90d'
+            tsdb_retention_size: '100GB'
+        log_level: 'info'
+        log_format: 'logfmt'
+    prometheus_web_settings:
+      basic_auth_users:
+        gw_2110000_ru: '$2y$12$replace_with_bcrypt_hash'
+    prometheus_settings:
+      global:
+        scrape_interval: '30s'
+        evaluation_interval: '30s'
+        external_labels:
+          prometheus: 'central'
+      scrape_configs:
+        - job_name: 'central-prometheus'
+          static_configs:
+            - targets:
+                - '127.0.0.1:9090'
+    alertmanager_options:
+      - web:
+          - listen_address: '127.0.0.1:9093'
+        cluster: ''
+    alertmanager_settings:
+      global:
+        resolve_timeout: '5m'
+      route:
+        receiver: 'blackhole'
+      receivers:
+        - name: 'blackhole'
+```
+
+Expected remote write endpoint:
+
+```text
+https://metrics.example.com/api/v1/write
+```
+
+## Router edge collector example
+
+The router scrapes itself and servers behind NAT, then writes to the central
+receiver. Local scrapes are HTTP. Remote write to the central receiver is HTTPS
+with basic auth and a password file.
+
+```yaml
+prometheus:
+  - enable:
+      - prometheus: 'true'
+        alertmanager: 'false'
+    started:
+      - prometheus: 'true'
+        alertmanager: 'false'
+    restart:
+      - prometheus: 'true'
+        alertmanager: 'false'
+    reload:
+      - prometheus: 'true'
+        alertmanager: 'false'
+    install_package:
+      - prometheus: 'true'
+        alertmanager: 'false'
+    package_state: 'present'
+    lint: 'all'
+    secret_files:
+      - path: '/etc/prometheus/remote_write.password'
+        content: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          ...
+        mode: '0640'
+    prometheus_options:
+      - web:
+          - listen_address: '127.0.0.1:9090'
+        storage:
+          - tsdb_retention_time: '3d'
+            tsdb_retention_size: '10GB'
+            remote_flush_deadline: '5m'
+        log_level: 'info'
+        log_format: 'logfmt'
+    prometheus_settings:
+      global:
+        scrape_interval: '30s'
+        evaluation_interval: '30s'
+        external_labels:
+          site: 'karavan'
+          collector: '{{ inventory_hostname }}'
+      remote_write:
+        - url: 'https://metrics.example.com/api/v1/write'
+          basic_auth:
+            username: '{{ inventory_hostname }}'
+            password_file: '/etc/prometheus/remote_write.password'
+          queue_config:
+            capacity: 10000
+            max_shards: 4
+            min_shards: 1
+      scrape_configs:
+        - job_name: 'router-prometheus'
+          static_configs:
+            - targets:
+                - '127.0.0.1:9090'
+              labels:
+                instance: '{{ inventory_hostname }}'
+        - job_name: 'router-netdata'
+          metrics_path: '/api/v1/allmetrics'
+          params:
+            format:
+              - 'prometheus'
+          static_configs:
+            - targets:
+                - '{{ ansible_host }}:19999'
+              labels:
+                instance: '{{ inventory_hostname }}'
+        - job_name: 'nat-servers-node'
+          static_configs:
+            - targets:
+                - '192.168.165.1:9100'
+                - '192.168.165.2:9100'
+              labels:
+                site: 'karavan'
+```
+
+## Internal server collector example
+
+Use this when a server inside NAT should run its own Prometheus and send data to
+the router collector. The router collector must enable remote write receiver on
+its LAN address or expose another authenticated endpoint if the network is not
+trusted.
+
+```yaml
+prometheus:
+  - enable:
+      - prometheus: 'true'
+        alertmanager: 'false'
+    started:
+      - prometheus: 'true'
+        alertmanager: 'false'
+    restart:
+      - prometheus: 'true'
+        alertmanager: 'false'
+    reload:
+      - prometheus: 'true'
+        alertmanager: 'false'
+    install_package:
+      - prometheus: 'true'
+        alertmanager: 'false'
+    prometheus_options:
+      - web:
+          - listen_address: '127.0.0.1:9090'
+        storage:
+          - tsdb_retention_time: '1d'
+            tsdb_retention_size: '3GB'
+    prometheus_settings:
+      global:
+        scrape_interval: '30s'
+        external_labels:
+          site: 'karavan'
+          collector: '{{ inventory_hostname }}'
+      remote_write:
+        - url: 'http://192.168.165.254:9090/api/v1/write'
+      scrape_configs:
+        - job_name: 'localhost'
+          static_configs:
+            - targets:
+                - '127.0.0.1:9100'
+```
+
+## Playbook example
 
 ```yaml
 ---
-prometheus:
-- enable:
-# Enable alertmanager service or not
-    - alertmanager: 'true'
-# Enable prometheus service or not
-      prometheus: 'true'
-  restart:
-# Restart alertmanager service after service override deploy or not
-    - alertmanager: 'true'
-# Restart prometheus service after service override deploy or not
-      prometheus: 'true'
-  reload:
-# Reload alertmanager service after configuration deploy or not
-    - alertmanager: 'true'
-# Reload prometheus service after configuration deploy or not
-      prometheus: 'true'
-  install_package:
-# Install prometheus package or not
-    - prometheus: 'true'
-# Install alertmanager package or not
-      alertmanager: 'true'
-# Linting checks to apply. Available options are: 'all', 'duplicate-rules',
-# 'none'. Use 'none' to disable linting
-  lint: 'all'
-# Prometheus startup options
-  prometheus_options:
-    - web:
-# Address to listen on for UI, API, and telemetry
-        - listen_address: '0.0.0.0:9090'
-# Path to configuration file that can enable TLS or authentication
-          config_file: ''
-# Maximum duration before timing out read of the request, and closing idle
-# connections
-          read_timeout: '5m'
-# Maximum number of simultaneous connections
-          max_connections: '512'
-# The URL under which Prometheus is externally reachable (for example, if
-# Prometheus is served via a reverse proxy). Used for generating relative and
-# absolute links back to Prometheus itself. If the URL has a path portion, it
-# will be used to prefix all HTTP endpoints served by Prometheus. If omitted,
-# relevant URL components will be derived automatically
-          external_url: ''
-# Prefix for the internal routes of web endpoints. Defaults to path of
-# 'web_external_url'
-          route_prefix: ''
-# Path to static asset directory, available at '/user'
-          user_assets: ''
-# Enable shutdown and reload via HTTP request
-          enable_lifecycle: 'false'
-# Enable API endpoints for admin control actions
-          enable_admin_api: 'true'
-# Enable API endpoint accepting remote write requests
-          enable_remote_write_receiver: 'true'
-# List of the remote write protobuf messages to accept when receiving the remote
-# writes. Supported values:
-# * prometheus.WriteRequest
-# * io.prometheus.write.v2.Request
-          remote_write_receiver_accepted_protobuf_messages:
-            - 'prometheus.WriteRequest',
-            - 'io.prometheus.write.v2.Request'
-# Enable API endpoint accepting OTLP write requests
-          enable_otlp_receiver: 'true'
-# Path to the console template directory, available at '/consoles'
-          console_templates: 'consoles'
-# Path to the console library directory
-          console_libraries: 'console_libraries'
-# Document title of Prometheus instance
-          page_title: 'Prometheus Time Series Collection and Processing Server'
-# Regex for CORS origin. It is fully anchored
-# Example: 'https?://(domain1|domain2)\.com'
-          cors_origin: '.*'
-      storage:
-# How long to retain samples in storage. Defaults to 15d. Units supported:
-# 'y', 'w', 'd', 'h', 'm', 's', 'ms'
-        - tsdb_retention_time: '15d'
-# Maximum number of bytes that can be stored for blocks. Units supported:
-# 'KB', 'MB', 'GB', 'TB', 'PB'
-          tsdb_retention_size: '100GB'
-# Do not create lockfile in data directory
-          tsdb_no_lockfile: 'false'
-# Allow overlapping blocks, which in turn enables vertical compaction and
-# vertical query merge
-          tsdb_allow_overlapping_blocks: 'false'
-# Compress the tsdb WAL
-          tsdb_wal_compression: 'false'
-# How long to wait flushing sample on shutdown or config reload
-          remote_flush_deadline: ''
-# Maximum overall number of samples to return via the remote read interface, in
-# a single query. '0' means no limit. This limit is ignored for streamed
-# response types
-          remote_read_sample_limit: '5e7'
-# Maximum number of concurrent remote read calls. 0 means no limit
-          remote_read_concurrent_limit: '10'
-# Maximum number of bytes in a single frame for streaming remote read response
-# types before marshalling. Note that client might have limit on frame size as
-# well. 1MB as recommended by protobuf by default
-          remote_read_max_bytes_in_frame: '1048576'
-      rules:
-# Max time to tolerate prometheus outage for restoring "for" state of alert
-        - alert_for_outage_tolerance: '1h'
-# Minimum duration between alert and restored "for" state. This is maintained
-# only for alerts with configured "for" time greater than grace period
-          alert_for_grace_period: '10m'
-# Minimum amount of time to wait before resending an alert to Alertmanager
-          alert_resend_delay: '1m'
-# Global concurrency limit for independent rules that can run concurrently. When
-# set, 'query: max_concurrency' may need to be adjusted accordingly
-          max_concurrent_evals: '4'
-      alermanager:
-# The capacity of the queue for pending Alertmanager notifications
-        - notification_queue_capacity: '10000'
-# Send any outstanding Alertmanager notifications when shutting down. If
-# 'false', any outstanding Alertmanager notifications will be dropped when
-# shutting down
-          drain_notification_queue_on_shutdown: 'true'
-      query:
-# The delta difference allowed for retrieving metrics during expression
-# evaluations
-        - lookback_delta: '5m'
-# Maximum time a query may take before being aborted
-          timeout: '2m'
-# Maximum number of queries executed concurrently
-          max_concurrency: '20'
-# Maximum number of samples a single query can load into memory. Note that
-# queries will fail if they try to load more samples than this into memory, so
-# this also limits the number of samples a query can return
-          max_samples: '50000000'
-# Only log messages with the given severity or above.
-# One of: 'debug', 'info', 'warn', 'error'
-      log_level: 'info'
-# Output format of log messages. One of: 'logfmt' or 'json'
-      log_format: 'logfmt'
-# Alertmanager startup options
-  alertmananger_options:
-    - data:
-# How long to keep data for
-        - retention: '120h'
-# Interval between garbage collection and snapshotting to disk of the silences
-# and the notification logs
-          maintenance_interval: '15m'
-      silences:
-# Maximum number of silences, including expired silences. If negative or zero,
-# no limit is set
-        - max: '0'
-# Maximum silence size in bytes. If negative or zero, no limit is set
-          max_size_bytes: '0'
-# Interval between alert GC
-      alerts_gc_interval: '30m'
-      web:
-# The URL under which Alertmanager is externally reachable (for example, if
-# Alertmanager is served via a reverse proxy). Used for generating relative and
-# absolute links back to Alertmanager itself. If the URL has a path portion, it
-# will be used to prefix all HTTP endpoints served by Alertmanager. If omitted,
-# relevant URL components will be derived automatically
-        - external_url: ''
-# Prefix for the internal routes of web endpoints. Defaults to path of
-# --web.external-url
-          route_prefix: ''
-# Address to listen on for the web interface and API
-          listen_address: ':9093'
-# Maximum number of GET requests processed concurrently. If negative or zero,
-# the limit is GOMAXPROC or 8, whichever is larger
-          get_concurrency: '0'
-# Timeout for HTTP requests. If negative or zero, no timeout is set
-          timeout: '15'
-      cluster:
-# Path to config yaml file that can enable mutual TLS within the gossip
-# protocol. See 'alertmanager_gossip' settings below. Should be set to
-# '/etc/alertmanager/gossip.yml'
-        - tls_config: '/etc/alertmanager/gossip.yml'
-# Listen address for cluster. Set to empty string to disable HA mode
-          listen_address: '0.0.0.0:9094'
-# Explicit address to advertise in cluster
-          advertise_address: ''
-# Cluster initial peers (may be string or list of peers)
-          peer: ''
-# Time to wait between peers to send notifications
-          peer_timeout: '15s'
-# Interval between sending gossip messages. By lowering this value (more
-# frequent) gossip messages are propagated across the cluster more quickly at
-# the expense of increased bandwidth
-          gossip_interval: ''
-# Interval for gossip state syncs. Setting this interval lower (more frequent)
-# will increase convergence speeds across larger clusters at the expense of
-# increased bandwidth usage
-          pushpull_interval: '1m0s'
-# Timeout for establishing a stream connection with a remote node for a full
-# state sync, and for stream read and write operations
-          tcp_timeout: '10s'
-# Timeout to wait for an ack from a probed node before assuming it is unhealthy.
-# This should be set to 99-percentile of RTT (round-trip time) on your network
-          probe_timeout: '500ms'
-# Interval between random node probes. Setting this lower (more frequent) will
-# cause the cluster to detect failed nodes more quickly at the expense of
-# increased bandwidth usage
-          probe_interval: '1s'
-# Maximum time to wait for cluster connections to settle before evaluating
-# notifications
-          settle_timeout: '1m0s'
-# Interval between attempting to reconnect to lost peers
-          reconnect_interval: '10s'
-# Length of time to attempt to reconnect to a lost peer
-          reconnect_timeout: '6h0m0s'
-# The cluster label is an optional string to include on each packet and stream.
-# It uniquely identifies the cluster and prevents cross-communication issues
-# when sending gossip messages
-          label: 'default'
-# Only log messages with the given severity or above. One of: 'debug', 'info',
-# 'warn', 'error'
-      log_level: ''
-# Output format of log messages. One of: 'logfmt', 'json'
-      log_format: ''
-# Alertmanager Cluster TLS Gossip settings
-# https://prometheus.io/docs/alerting/latest/https/#gossip-traffic
-  alertmanager_gossip:
-    tls_server_config:
-      cert_file: '/etc/pki/tls/private/le/fullchain.pem'
-      key_file: '/etc/pki/tls/private/le/privkey.pem'
-      client_auth_type: 'RequireAndVerifyClientCert'
-      min_version: 'TLS13'
-    tls_client_config:
-      cert_file: '/etc/pki/tls/private/le/fullchain.pem'
-      key_file: '/etc/pki/tls/private/le/privkey.pem'
-      server_name: 'prometheus.example.com'
-# Alertmanager settings
-  alertmanager_settings:
-    global:
-      resolve_timeout: 5m
-  # This path should be defined at least, if you use templates
-    templates:
-      - '/etc/alertmanager/alertmanager.tmpl'
-    route:
-      receiver: 'telegram'
-      group_by:
-        - 'cluster'
-        - 'group'
-        - 'instance'
-        - 'job'
-        - 'severity'
-      repeat_interval: '8737h'
-    receivers:
-      - name: 'telegram'
-        telegram_configs:
-          - chat_id: -1000000000000
-            bot_token: "token"
-            message: '{{ template "telegram.default.message" . }}'
-            parse_mode: 'Markdown'
-  alertmanager_templates: |
-    {%- raw -%}
-    {{ define "__text_alert_list" }}{{ range . }}Labels:
-    {{ range .Labels.SortedPairs }} - {{ .Name }} = {{ .Value }}
-    {{ end }}Annotations:
-    {{ range .Annotations.SortedPairs }} - {{ .Name }} = {{ .Value }}
-    {{ end }}Source: {{ .GeneratorURL }}
-    {{ end }}{{ end }}
+- name: Deploy prometheus
+  become: true
+  gather_facts: true
+  remote_user: root
+  no_log: false
+  strategy: free
+  roles:
+    - pacman
+    - yum
+    - dnf
+    - prometheus
+  hosts: empty
+```
 
-    {{ define "telegram.default.message" }}
-    {{ if gt (len .Alerts.Firing) 0 }}
-    Alerts Firing:
-    {{ template "__text_alert_list" .Alerts.Firing }}
-    {{ end }}
-    {{ if gt (len .Alerts.Resolved) 0 }}
-    Alerts Resolved:
-    {{ template "__text_alert_list" .Alerts.Resolved }}
-    {{ end }}
-    {{ end }}
-    {%- endraw -%}
-  amtool_settings:
-    alertmanager.url: 'htts://alermanager.example.com'
-    tls.insecure.skip.verify: 'true'
-  prometheus_settings:
-    global:
-      scrape_interval: 15s
-      evaluation_interval: 15s
-    alerting:
-      alertmanagers:
-        - static_configs:
-            - targets:
-                - '127.0.0.1:9093'
-    scrape_configs:
-    - job_name: 'example'
-      static_configs:
-      - targets:
-        - '192.168.1.1:9283'
-  prometheus_rules:
-    groups:
-      - name: 'alert_rules'
-        rules:
-          - alert: 'NetdataSmartdPendingSectors'
-            expr: 'netdata:smartd:current_pending_sector'
-            for: '1h'
-            labels:
-              severity: 'warning'
-            annotations:
-              summary: '{% raw %}Host {{ $labels.instance }} have drive with pending sectors{% endraw %}'
-              description: '{% raw %}Drive "{{ $labels.dimension }}" on host "{{ $labels.instance }}" have {{ $value }} pending sectors{% endraw %}'
-      - name: 'record_rules'
-        rules:
-          - record: 'netdata:smartd:current_pending_sector'
-            expr: 'netdata_smartd_log_current_pending_sector_count_sectors_average > 1'
+Run checks first:
+
+```bash
+ansible-playbook playbook/monitoring/deploy_prometheus.yml --syntax-check
+ansible-playbook playbook/monitoring/deploy_prometheus.yml --check --diff --limit gw.2110000.ru
+```
+
+## Notes
+
+Prometheus validates `prometheus.yml` with `promtool check config` and validates
+rule files with `promtool check rules`. Alertmanager config is validated with
+`amtool check-config`.
+
+Remote write receiver is enabled by the `--web.enable-remote-write-receiver`
+flag rendered from:
+
+```yaml
+prometheus_options:
+  - web:
+      - enable_remote_write_receiver: 'true'
 ```
