@@ -49,6 +49,16 @@
     group: "root"
     mode: "0644"
   register: "alertmanager_service_settings_result"
+  when:
+    - "hostvars[inventory_hostname]['prometheus'] is defined"
+    - "hostvars[inventory_hostname]['prometheus']
+      not in ['', [], '[]', None]"
+    - "hostvars[inventory_hostname]['prometheus'] |
+      community.general.json_query(lookup('ansible.builtin.vars',
+      'alertmanager_install_package', default='')) == 'true'"
+  vars:
+    alertmanager_install_package:
+      "[].install_package[] | map(&alertmanager || 'false', @) | [0]"
   notify:
     - "Restart Alertmanager"
 - name: "prometheus | Ensure Alertmanager service is started"

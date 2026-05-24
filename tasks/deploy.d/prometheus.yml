@@ -74,6 +74,10 @@
     group: "root"
     mode: "0644"
   register: "prometheus_service_settings_result"
+  when:
+    - "hostvars[inventory_hostname]['prometheus'] is defined"
+    - "hostvars[inventory_hostname]['prometheus']
+      not in ['', [], '[]', None]"
   notify:
     - "Restart Prometheus"
 - name: "prometheus | Ensure Prometheus service is started"
