@@ -9,3 +9,13 @@ alertmanager_conf_dest: '/etc/prometheus'
 alertmanager_package: 'prometheus-alertmanager'
 alertmanager_bin: '/usr/bin/prometheus-alertmanager'
 amtool_conf_dest: '/etc/prometheus'
+
+# Debian's packaged prometheus/alertmanager units use $ARGS and do NOT bake
+# --config.file / --storage path into ExecStart (Arch's packaged units do, and
+# read $PROMETHEUS_ARGS). The role writes PROMETHEUS_ARGS/ALERTMANAGER_ARGS, so
+# on Debian we drop in an ExecStart override mirroring the Arch unit. Toggle off
+# by setting prometheus_systemd_dropin: false in host_vars if not wanted.
+prometheus_systemd_dropin: true
+prometheus_systemd_dir: '/etc/systemd/system'
+prometheus_data_path: '/var/lib/prometheus/metrics2'
+alertmanager_data_path: '/var/lib/prometheus/alertmanager'

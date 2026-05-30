@@ -30,6 +30,9 @@
     prometheus_rules_settings:
       "{{ hostvars[inventory_hostname]['prometheus'] |
       community.general.json_query('[].prometheus_rules[] | [0]') }}"
+    prometheus_rules_files:
+      "{{ hostvars[inventory_hostname]['prometheus'] |
+      community.general.json_query('[].rules_files[]') }}"
     prometheus_web_settings:
       "{{ hostvars[inventory_hostname]['prometheus'] |
       community.general.json_query('[].prometheus_web_settings[] | [0]') }}"

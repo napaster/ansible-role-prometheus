@@ -40,6 +40,12 @@
       vars:
         alertmanager_install_package:
           "[].install_package[] | map(&alertmanager || 'false', @) | [0]"
+- name: "prometheus | Include systemd drop-in tasks (Debian unit adaptation)"
+  ansible.builtin.import_tasks:
+    file: "deploy.d/systemd_dropin.yml"
+  when:
+    - "lookup('ansible.builtin.vars', 'prometheus_systemd_dropin',
+      default=false) | bool"
 - name: "prometheus | Include Prometheus deployment tasks"
   ansible.builtin.import_tasks:
     file: "deploy.d/prometheus.yml"

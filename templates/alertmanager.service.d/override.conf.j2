@@ -1,0 +1,8 @@
+## {{ ansible_managed }}
+## Do not edit manually — Debian service-unit adaptation
+## (role tasks/deploy.d/systemd_dropin.yml; gated by prometheus_systemd_dropin).
+## {{ alertmanager_bin_override | default(alertmanager_bin) }} can be overridden in host_vars (e.g. upstream vanilla
+## /usr/local/bin/alertmanager-upstream when the Debian build strips the web UI).
+[Service]
+ExecStart=
+ExecStart={{ alertmanager_bin_override | default(alertmanager_bin) }} --config.file={{ alertmanager_conf_dest }}/alertmanager.yml --storage.path={{ alertmanager_data_path }} $ALERTMANAGER_ARGS

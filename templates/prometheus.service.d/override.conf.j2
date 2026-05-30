@@ -1,0 +1,8 @@
+## {{ ansible_managed }}
+## Do not edit manually — Debian service-unit adaptation
+## (role tasks/deploy.d/systemd_dropin.yml; gated by prometheus_systemd_dropin).
+## Mirrors the Arch packaged unit: bake --config.file/--storage path + read
+## $PROMETHEUS_ARGS (which the role writes to {{ prometheus_options_dest }}/{{ prometheus_service }}).
+[Service]
+ExecStart=
+ExecStart={{ prometheus_bin }} --config.file={{ prometheus_conf_dest }}/prometheus.yml --storage.tsdb.path={{ prometheus_data_path }} $PROMETHEUS_ARGS

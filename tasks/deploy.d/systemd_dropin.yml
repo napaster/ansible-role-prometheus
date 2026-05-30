@@ -1,0 +1,58 @@
+---
+# Debian service-unit adaptation. Packaged prometheus/alertmanager units use
+# $ARGS and bake nothing into ExecStart, whereas the role writes
+# PROMETHEUS_ARGS/ALERTMANAGER_ARGS (Arch convention) without --config.file/path.
+# Drop-in resets ExecStart to {bin} --config.file --storage path $*_ARGS,
+# mirroring the Arch packaged unit. Whole file gated by prometheus_systemd_dropin.
+- name: "prometheus | Ensure Prometheus systemd drop-in directory"
+  ansible.builtin.file:
+    path: "{{ prometheus_systemd_dir }}/{{ prometheus_service }}.service.d"
+    state: "directory"
+    owner: "root"
+    group: "root"
+    mode: "0755"
+  when:
+    - "lookup('ansible.builtin.vars', 'prometheus_instance_settings',
+      default='') not in ['', [], '[]', None]"
+- name: "prometheus | Deploy Prometheus systemd drop-in"
+  ansible.builtin.template:
+    src: "prometheus.service.d/override.conf.j2"
+    dest: "{{ prometheus_systemd_dir }}/{{ prometheus_service }}.service.d/override.conf"
+    owner: "root"
+    group: "root"
+    mode: "0644"
+  register: "prometheus_dropin_result"
+  when:
+    - "lookup('ansible.builtin.vars', 'prometheus_instance_settings',
+      default='') not in ['', [], '[]', None]"
+  notify:
+    - "Restart Prometheus"
+- name: "prometheus | Ensure Alertmanager systemd drop-in directory"
+  ansible.builtin.file:
+    path: "{{ prometheus_systemd_dir }}/{{ alertmanager_service }}.service.d"
+    state: "directory"
+    owner: "root"
+    group: "root"
+    mode: "0755"
+  when:
+    - "lookup('ansible.builtin.vars', 'alertmanager_instance_settings',
+      default='') not in ['', [], '[]', None]"
+- name: "prometheus | Deploy Alertmanager systemd drop-in"
+  ansible.builtin.template:
+    src: "alertmanager.service.d/override.conf.j2"
+    dest: "{{ prometheus_systemd_dir }}/{{ alertmanager_service }}.service.d/override.conf"
+    owner: "root"
+    group: "root"
+    mode: "0644"
+  register: "alertmanager_dropin_result"
+  when:
+    - "lookup('ansible.builtin.vars', 'alertmanager_instance_settings',
+      default='') not in ['', [], '[]', None]"
+  notify:
+    - "Restart Alertmanager"
+- name: "prometheus | Reload systemd after drop-in change"
+  ansible.builtin.systemd:
+    daemon_reload: true
+  when:
+    - "(prometheus_dropin_result.changed | default(false)) or
+      (alertmanager_dropin_result.changed | default(false))"
